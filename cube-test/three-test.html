@@ -26,6 +26,10 @@
 
 			var cubeX = 1, cubeY = 1;
 
+			//set camera frustum to determine the camera view
+			var frustum = new THREE.Frustum();
+	        updateFrustum();
+
 			var render = function () {
 				requestAnimationFrame(render);
 
@@ -34,26 +38,57 @@
 
 				renderer.render(scene, camera);
 
-							movement();
-
+				movement();
 
 			}
 
-	    function movement() {
-	      if(Key.isDown(Key.A)) {
-	        cube.position.x -= 0.1;
+	    	function movement() {
+	      		if(Key.isDown(Key.A)) {
+	        		cube.position.x -= 0.1;
+	        		checkView(1);
+	      		}
+	      		if(Key.isDown(Key.D)) {
+	        		cube.position.x += 0.1;
+	        		checkView(2);
+	      		}	      		
+	      		if(Key.isDown(Key.W)) {
+	        		cube.position.y += 0.1;
+	        		checkView(3);
+	      		}
+	      		if(Key.isDown(Key.S)) {
+	        		cube.position.y -= 0.1;
+	        		checkView(4);
+	      		}
+	    	}
 
-	      }
-	      if(Key.isDown(Key.W)) {
-	        cube.position.y += 0.1;
-	      }
-	      if(Key.isDown(Key.S)) {
-	        cube.position.y -= 0.1;
-	      }
-	      if(Key.isDown(Key.D)) {
-	        cube.position.x += 0.1;
-	      }
-	    }
+	    	function checkView(x) {
+	    		if(!frustum.intersectsObject( cube ) ){	
+					switch(x){
+						case 1:
+							camera.position.x = cube.position.x + 1;
+							updateFrustum();
+							break;
+						case 2:
+							camera.position.x = cube.position.x - 1;
+							updateFrustum();
+							break;
+						case 3:
+							camera.position.y = cube.position.y - 1;
+							updateFrustum();
+							break;
+						case 4:
+							camera.position.y = cube.position.y + 1;
+							updateFrustum();
+							break;
+					}
+				}
+	    	}
+
+	    	// update the frustum for camera each time camera changes
+	    	function updateFrustum() {
+	    		frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( 
+	        	camera.projectionMatrix, camera.matrixWorldInverse ) );
+	    	}
 
 
 			render();
