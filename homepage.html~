@@ -9,7 +9,7 @@
 
 		<title>ZombieGame</title>
 
-<<<<<<< HEAD
+
 	</head>
 	<body style="background-image:url('HomescrnTheme.jpg')">
 
@@ -19,18 +19,7 @@
 			alert(result); 
 		}
 	</script>-->
-=======
-	<!--	<script>
-		$.get("dbscript.php",{param:0},callbackFunction);
-			callbackFunction(data)
-			{
-				alert(data);
-			}
-		</script>-->
 
-	</head>
-	<body style="background-image:url('HomescrnTheme.jpg')">
->>>>>>> b2156ab0efe6669162a87b5d565d7b5fc8e9a598
 	
 	<div class="outer">
 
@@ -51,7 +40,16 @@
 						<br>
 						<form name="loadgame" method="link" action="login.html"> 
 							<div class="buttonborder">
-								<input class="button" type="submit" value="Load Game">
+								<input class="button" type="submit" value="Login">
+							</div>
+						</form>
+					</div>
+
+					<div>
+						<br>
+						<form name="signup" method="link" action="signup.html"> 
+							<div class="buttonborder">
+								<input class="button" type="submit" value="Sign Up">
 							</div>
 						</form>
 					</div>
