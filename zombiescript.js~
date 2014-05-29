@@ -5,6 +5,7 @@ $(document).ready(function() {
 			});
    }); 
 
+<<<<<<< HEAD
 /*	 $('#homediv').click(function() {
 			var result = '<?php echo "cheese" ?>'; 
 			alert(result);  
@@ -15,4 +16,9 @@ $(document).ready(function() {
 		{
 			alert(data);
 		}
+=======
+	 $('#homediv').click(function() {
+			alert("clicked"); 
+	 }); 
+>>>>>>> b2156ab0efe6669162a87b5d565d7b5fc8e9a598
 });

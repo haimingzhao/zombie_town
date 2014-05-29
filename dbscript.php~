@@ -2,6 +2,7 @@
 
 <?php
 
+<<<<<<< HEAD
 $connex = pg_connect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g1327117_u password=4TYHhrcGVG"); 
 
 	if ($connex) { 
@@ -32,9 +33,7 @@ $connex = pg_connect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g132
 				} else {
 					echo "incorrect password :("; 
 				}
-			} else {
-				echo "username not recognised :/"; 
-			}
+			} 
 		}
 
 /* 
@@ -46,4 +45,30 @@ $connex = pg_connect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g132
 		
 		pg_close($connex); 
 	}
+=======
+echo '<script type="text/javascript">alert("Data has been submitted");</script>';
+// your connection credentials 
+/*
+$connex = pg_connect("db.doc.ic.ac.uk","g1327117_u","4TYHhrcGVG"); 
+
+if ($connex) { 
+	// Don't forget to put here the name of your database 
+	pg_select_db("g1327117_u"); 
+
+	// convert code 
+	//$res = mysql_query("SHOW TABLES LIKE '%kunena%'"); 
+
+	//while ($row = mysql_fetch_array($res)) { 
+		//foreach ($row as $key => $table) { 
+			pg_query("SELECT * FROM Users"); 				
+		//echo $key . " => " . $table . " CONVERTED<br />"; 
+		//} 
+	//} 
+
+	pg_close($connex); 
+	
+} else { 
+	echo "Check your credential data, because the connection can't be established"; 
+}*/
+>>>>>>> b2156ab0efe6669162a87b5d565d7b5fc8e9a598
 ?>

@@ -80,3 +80,12 @@
 
 
 echo '<script type="text/javascript">alert("Data has been submitted");</script>';
+<<<<<<< HEAD
+
+
+echo '<script type="text/javascript">alert("Succeeded");</script>'; 
+} else { 
+	echo '<script type="text/javascript">alert("Failed");</script>'; 
+}
+=======
+>>>>>>> b2156ab0efe6669162a87b5d565d7b5fc8e9a598
