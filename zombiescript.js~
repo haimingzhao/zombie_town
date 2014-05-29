@@ -5,9 +5,7 @@ $(document).ready(function() {
 			});
    }); 
 
-/*	 $('#homediv').click(function() {
-			var result = '<?php echo "cheese" ?>'; 
-			alert(result);  
-	 }); */
-
+	 $('#homediv').click(function() {
+			alert("clicked"); 
+	 }); 
 });

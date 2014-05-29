@@ -7,15 +7,6 @@
 		<script type="text/javascript" src="zombiescript.js"></script>
 
 		<title>ZombieGame</title>
-
-	<!--	<script>
-		$.get("dbscript.php",{param:0},callbackFunction);
-			callbackFunction(data)
-			{
-				alert(data);
-			}
-		</script>-->
-
 	</head>
 	<body style="background-image:url('HomescrnTheme.jpg')">
 	

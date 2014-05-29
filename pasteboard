@@ -90,3 +90,7 @@
 	
 			</form>
 		</div> -->
+
+
+
+echo '<script type="text/javascript">alert("Data has been submitted");</script>';

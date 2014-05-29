@@ -1,8 +1,6 @@
-#!/usr/bin/php
-
 <?php
 
-echo '<script type="text/javascript">alert("Data has been submitted");</script>';
+echo "cheese"
 // your connection credentials 
 /*
 $connex = pg_connect("db.doc.ic.ac.uk","g1327117_u","4TYHhrcGVG"); 
