@@ -10,4 +10,9 @@ $(document).ready(function() {
 			alert(result);  
 	 }); */
 
+	$.get("dbscript.php",{param:0},callbackFunction);
+		callbackFunction(data)
+		{
+			alert(data);
+		}
 });
