@@ -157,8 +157,12 @@ INSERT INTO Resources VALUES(5,'Spice',1);
 --------------------------------------------------------------------------------------------------
 */
 
-INSERT INTO Users VALUES('Mitali', 'password1', 0);
-INSERT INTO Users VALUES('Lizzy', 'password2', 0);
+INSERT INTO Users VALUES('Mitali', 'Mitali', 10);
+INSERT INTO Users VALUES('Lizzy', 'Lizzy', 200);
+INSERT INTO Users VALUES('Joanna', 'Joanna', 50);
+INSERT INTO Users VALUES('Mira', 'Mira', 70);
+INSERT INTO Users VALUES('Bob', 'Bob', 100);
+
 
 
 

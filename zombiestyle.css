@@ -57,7 +57,7 @@
 .outer {
 	display: table;
   position: absolute;
-  height: 99%;
+  height: 95%;
   width: 99%;
 }
 
@@ -85,4 +85,57 @@
 	background-color:#2e7d35;
 	width: 100%;
 }
+
+table {
+	border-collapse:collapse; 
+	border: 2px solid #0B3B0B;
+	background-color:#2e7d35;
+	color:#F2F5A9;
+	font-size:20px;
+	font-style:normal;
+	width:100%;
+	text-decoration:none;
+	text-align:center;
+	text-shadow:1px 1px 0px #638033;
+	font-weight: bold; 
+	font-family: Arial;
+	text-shadow: 2px 0 0 #0B3B0B, -2px 0 0 #0B3B0B, 0 2px 0 #0B3B0B, 0 -2px 0 #0B3B0B, 
+							 1px 1px #0B3B0B, -1px -1px 0 #0B3B0B, 1px -1px 0 #0B3B0B, -1px 1px 0 #0B3B0B;
+}
+
+.bordered {
+	width:240px; 
+	height:200px; 
+	border-image-slice: 15 15 15 15;
+	border-image-width: 10px 10px 10px 10px;
+	border-image-outset: 0px 0px 0px 0px;
+	border-image-repeat: round round;
+	border-image-source: url('borderimage.png'); 
+}
+
+th {
+	background-color:#0B610B; 
+	padding: 15px; 
+	font-size:30px;
+	border:2px solid #0B3B0B;
+} 
+
+.columnuser {
+		width:50%;
+}
+
+.columnhs {
+		width:50%;
+}
+
+td {
+	padding: 10px; 
+	border:2px solid #0B3B0B;
+}
+
+tr:hover {
+	background-color:#63963e;
+}
+
+
 
