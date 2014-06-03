@@ -2,20 +2,17 @@ var http = require('http'),
 	url = require('url'),
 	fs = require('fs'),
 	io = require('socket.io'),
-	THREE = require('three'),
-    Player = require('./Player').Player;
+	THREE = require('three');
 
-var players = [];
-var server;
+var server
+    players = [];
 
 server = http.createServer(function(req, res){
     var path = url.parse(req.url).pathname;
-    console.log(path);
     switch (path) {
         case '/lib/three.js':
         case '/lib/kb.js':
         case '/Cube.js':
-        case '/Player.js':
         case '/':
     	    if (path == '/') path = '/client.html';
     	    fs.readFile(__dirname + path, function(err, data) {
@@ -47,24 +44,28 @@ console.log('connected');
 var playerIndex;
 
 var socket = io.listen(server); 
-socket.on('connection', function(client, un){
+socket.on('connection', function(client){
 
-    socket.username = un;
+    client.send({id : client.sessionId}); //send client their ID
+    console.log(client.sessionId + ' connected.\n');
 
-    players.push(socket.username);
+    socket.emit('connected');
 
-    console.log(socket.username + ' connected.\n');
-
-    socket.emit('player_joined');
-
-    client.on('joined', function(data) {
-        // var newPlayer = new Player(data.x, data.y);
-        // this.broadcast.emit('newPlayer', {x:newPlayer.getX(), y:newPlayer.getY()});
-        // console.log(newPlayer.getX(), newPlayer.getY());
+    client.on('message', function(message) {
+        players[client.sessionId] = message;
+        console.log(message);
+        return client.broadcast({message:[client.sessionId, message]});
     });
 
     client.on('disconnect', function() {
-        delete players[socket.username];
-        console.log(socket.username + ' disconnected.\n');
+        players.splice(client.sessionId,1);
+        return client.emit({ disconnect: [client.sessionId]})
+        console.log('disconnect');
     });
 });
+
+function movement_handler() {
+    for(player in players) {
+        player = vector3.vectorAddSelf(player);
+    }
+}

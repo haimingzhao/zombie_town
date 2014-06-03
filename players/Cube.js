@@ -1,11 +1,8 @@
 var socket = io.connect();
-			  // var $usernameInput = $('.usernameInput');
 
-			// socket.emit('username', function(data) {
+function init () {
 
-			// })
-
-			socket.on('player_joined', function() {
+			socket.on('connected', function() {
 
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
@@ -15,21 +12,33 @@ var socket = io.connect();
 			document.body.appendChild(renderer.domElement);
 
 			var geometry = new THREE.CubeGeometry(1,1,1);
-			var material = new THREE.MeshBasicMaterial({color: 0x1975FF});
-			var cube = new THREE.Mesh(geometry, material);
-			scene.add(cube);
+			var material = new THREE.MeshBasicMaterial({color: 0x458B00});
+			var zombie = new THREE.Mesh(geometry, material);
+			scene.add(zombie);
+
+			var geometry = new THREE.CubeGeometry(1,1,1);
+			var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
+			var slayer = new THREE.Mesh(geometry, material);
+			scene.add(slayer);
 
 			camera.position.z = 5;
 
 			var cubeX = 1, cubeY = 1;
 
-			socket.emit('joined');
-
 			var render = function () {
 				requestAnimationFrame(render);
 
-				cube.rotation.x += 0.1;
-				cube.rotation.y += 0.1;
+				// socket.broadcast('slayer', function() {
+					slayer.position.x = 2;
+					slayer.position.y = 2;
+					slayer.rotation.x += 0.1;
+					slayer.rotation.y += 0.1;
+				// });
+
+				// socket.emit('zombie', function() {
+	 				zombie.rotation.x += 0.1;
+					zombie.rotation.y += 0.1;
+				// });
 
 				renderer.render(scene, camera);
 
@@ -38,19 +47,35 @@ var socket = io.connect();
 
 		    function movement() {
 		      if(Key.isDown(Key.A)) {
-		      	cube.position.x -= 0.1;
+		      	zombie.position.x -= 0.1;
+		      	camera.position.x -= 0.1;
 		      }
 		      if(Key.isDown(Key.W)) {
-		        cube.position.y += 0.1;
+		        zombie.position.y += 0.1;
+		        camera.position.y += 0.1;
 		      }
 		      if(Key.isDown(Key.S)) {
-		        cube.position.y -= 0.1;
+		        zombie.position.y -= 0.1;
+		        camera.position.y -= 0.1;
 		      }
 		      if(Key.isDown(Key.D)) {
-		        cube.position.x += 0.1;
+		        zombie.position.x += 0.1;
+		        camera.position.x += 0.1;
 		      }
+
+		      // client_move();
+		      setInterval(client_move(), 1000/60);
+
 		    }
 
 			render();
 
+			function client_move() {
+				var msg = new Message(zombie.position);
+				socket.send(msg);
+			}
+
 		});
+
+};
+// init();
