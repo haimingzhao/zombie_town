@@ -1,22 +1,4 @@
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<title>My first Three.js app</title>
-		<style>canvas { width: 100%; height: 100% }</style>
-		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-
-		<script src="lib/three.js"></script>
-
-		<script src="/socket.io/socket.io.js"></script>
-
-		<script src="lib/kb.js"></script>
-
-		<script src="Cube.js"></script>
-	</head>
-	<body>
-		<!--<script>
-
-			var socket = io.connect();
+var socket = io.connect();
 			  // var $usernameInput = $('.usernameInput');
 
 			// socket.emit('username', function(data) {
@@ -41,6 +23,8 @@
 
 			var cubeX = 1, cubeY = 1;
 
+			socket.emit('joined');
+
 			var render = function () {
 				requestAnimationFrame(render);
 
@@ -54,9 +38,7 @@
 
 		    function movement() {
 		      if(Key.isDown(Key.A)) {
-		      	socket.emit('move_left', function() {
-		      		cube.position.x -= 0.1;	
-		      	})
+		      	cube.position.x -= 0.1;
 		      }
 		      if(Key.isDown(Key.W)) {
 		        cube.position.y += 0.1;
@@ -72,11 +54,3 @@
 			render();
 
 		});
-
-		socket.emit('joined');
-			
-		</script> -->
-	</body>
-</html>
-
-
