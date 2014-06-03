@@ -5,98 +5,71 @@
 		<style>canvas { width: 100%; height: 100% }</style>
 		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 
-		<script src="three.js"></script>
+		<script src="lib/three.js"></script>
 
 		<script src="/socket.io/socket.io.js"></script>
 
-		<script src="kb.js"></script>
-
+		<script src="lib/kb.js"></script>
 	</head>
 	<body>
 		<script>
 
 			var socket = io.connect();
 
-			socket.on('date', function() {
+			socket.on('player_joined', function() {
 
-			document.write('joined, poo');
+			var scene = new THREE.Scene();
+			// <!-- PerspectiveCamera(field_of_view, aspect_ratio, near, far) -->
+			var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
-			    var camera, scene, renderer;
-    			var geometry, material, mesh;
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
 
-    			document.write('FUCK');
+			var geometry = new THREE.CubeGeometry(1,1,1);
+			var material = new THREE.MeshBasicMaterial({color: 0x1975FF});
+			var cube = new THREE.Mesh(geometry, material);
+			scene.add(cube);
 
-    init();
-    animate();
+			camera.position.z = 5;
 
-    function init() {
+			var cubeX = 1, cubeY = 1;
 
-    	document.write('fsdsjhj');
+			var render = function () {
+				requestAnimationFrame(render);
 
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-            	    document.write('HEeeEEEEE');
+				cube.rotation.x += 0.1;
+				cube.rotation.y += 0.1;
 
-        camera.position.z = 1000;
-            	    document.write('HEeeEEEEE');
+				renderer.render(scene, camera);
 
-
-        scene = new THREE.Scene();
-            	    document.write('HEeeEEEEE');
-
-
-        geometry = new THREE.BoxGeometry( 200, 200, 200 );
-            	    document.write('HEeeEEEEE');
-
-        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-            	    document.write('HEeeEEEEE');
+							movement();
 
 
-        mesh = new THREE.Mesh( geometry, material );
-            	    document.write('HEeeEEEEE');
+			}
 
-        scene.add( mesh );
-            	    document.write('HEeeEEEEE');
-
-
-        renderer = new THREE.CanvasRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-
-        document.body.appendChild( renderer.domElement );
-
-    }
-
-    function animate() {
-
-        // note: three.js includes requestAnimationFrame shim
-        requestAnimationFrame( animate );
-
-        mesh.rotation.x += 0.01;
-        mesh.rotation.y += 0.02;
-
-        renderer.render( scene, camera );
-
-        movement();
-
-    };
-    
-    function movement() {
-	    if(Key.isDown(Key.A)) {
-		    mesh.position.x -= 0.1;
+	    function movement() {
+	      if(Key.isDown(Key.A)) {
+	        cube.position.x -= 0.1;
+	      }
+	      if(Key.isDown(Key.W)) {
+	        cube.position.y += 0.1;
+	      }
+	      if(Key.isDown(Key.S)) {
+	        cube.position.y -= 0.1;
+	      }
+	      if(Key.isDown(Key.D)) {
+	        cube.position.x += 0.1;
+	      }
 	    }
-	    if(Key.isDown(Key.W)) {
-	        mesh.position.y += 0.1;
-	    }
-	    if(Key.isDown(Key.S)) {
-	        mesh.position.y -= 0.1;
-	    }
-	    if(Key.isDown(Key.D)) {
-	        mesh.position.x += 0.1;
-	    }
-	};
 
-});
+
+			render();
+
+		});
 			
 		</script>
 	</body>
 </html>
+
 
