@@ -27,7 +27,7 @@ DROP TABLE Ships;
 DROP TABLE Holds;
 */
 
-/*DROP TABLE Users;*/
+DROP TABLE Users;
 
 --------------------------------------------------------------------------------------------------
 -- Next we create the tables for our database.

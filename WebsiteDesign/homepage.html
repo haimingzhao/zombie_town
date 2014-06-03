@@ -9,7 +9,6 @@
 
 		<title>ZombieGame</title>
 
-
 	</head>
 	<body style="background-image:url('HomescrnTheme.jpg')">
 
@@ -19,19 +18,18 @@
 			alert(result); 
 		}
 	</script>-->
-
 	
 	<div class="outer">
 
 		<div class="inner" align="center">
 			
-			<div id="homediv">
+			<div id="homediv" onclick="test()">
 					<div>
 						<br>
 						<form name="newgame"> 
-							<div class="buttonborder" id="play">
+							<div class="buttonborder">
 							<!--<input class="button" type="submit" value="New Game">-->
-							<input id="play" class="button" type="submit" value="Play!">
+							<button id="newgame" class="button">New Game</button>
 							</div>
 						</form>
 					</div>
@@ -40,16 +38,7 @@
 						<br>
 						<form name="loadgame" method="link" action="login.html"> 
 							<div class="buttonborder">
-								<input class="button" type="submit" value="Login">
-							</div>
-						</form>
-					</div>
-
-					<div>
-						<br>
-						<form name="signup" method="link" action="signup.html"> 
-							<div class="buttonborder">
-								<input class="button" type="submit" value="Sign Up">
+								<input class="button" type="submit" value="Load Game">
 							</div>
 						</form>
 					</div>
