@@ -1,9 +1,70 @@
 #!/usr/bin/php
 
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="zombiestyle.css">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script type="text/javascript" src="zombiescript.js"></script>
+
+		<title>ZombieGame</title>
+
+
+	</head>
+	<body style="background-image:url('HomescrnTheme.jpg')">
+
+	<div class="outer">
+
+		<div class="inner" align="center">
+			
+			<div id="homediv">
+					<div>
+						<br>
+						<form name="newgame"> 
+							<div class="buttonborder" id="play">
+							<input id="play" class="button" type="submit" value="Play!">
+							</div>
+						</form>
+					</div>
+
+					<div>
+						<br>
+						<form name="loadgame" method="link" action="login.html"> 
+							<div class="buttonborder">
+								<input class="button" type="submit" value="Login">
+							</div>
+						</form>
+					</div>
+
+					<div>
+						<br>
+						<form name="signup" method="link" action="signup.html"> 
+							<div class="buttonborder">
+								<input class="button" type="submit" value="Sign Up">
+							</div>
+						</form>
+					</div>
+	
+					<div>
+						<br>
+						<form name="rules" method="link" action="rules.html"> 
+							<div class="buttonborder">
+								<input class="button" type="submit" value="Rules">
+							</div>
+						</form>
+					</div>
+			</div>
+		</div>		
+	</div>
+<body>
+
+
+</html>
+
+
 <?php
 
 
-$connex = pg_connect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g1327117_u password=4TYHhrcGVG"); 
+$connex = pg_pconnect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g1327117_u password=4TYHhrcGVG"); 
 
 	if ($connex) { 
 
@@ -29,21 +90,15 @@ $connex = pg_connect("host=db.doc.ic.ac.uk port=5432 dbname=g1327117_u user=g132
 		}
 
 		// If not in use already, add credentials to the database. 
-		/*$result2 = pg_query($connex, "INSERT INTO Users VALUES('" . $newusername . "', '" . $newpassword . "', 0);"); 
+		$result2 = pg_query($connex, "INSERT INTO Users VALUES('" . $newusername . "', '" . $newpassword . "', 0);"); 
+
+		echo "successfully added new user\n"; 
 		
-		$countnext = pg_query($connex, "SELECT COUNT(*) FROM Users"); 
-*/
-		$arr = pg_fetch_array($result, 0, PGSQL_NUM);
-		echo $arr[0] . "\n"; 
-		echo $arr[1] . "\n"; 
-		echo $arr[2] . "\n\n"; 
-		$arr = pg_fetch_array($result, 1, PGSQL_NUM);
-		echo $arr[0] . "\n"; 
-		echo $arr[1] . "\n"; 
-		echo $arr[2] . "\n\n"; 
 
 
+		/*pg_close($connex); */
 
-		pg_close($connex); 
 	}
 ?>
+
+
