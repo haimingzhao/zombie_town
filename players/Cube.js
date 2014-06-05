@@ -51,28 +51,6 @@ function init () {
 			}
 
 		    // socket.on('zombie', function movement() {
-		    	function movement() {
-		      if(Key.isDown(Key.A)) {
-		      	zombie.position.x -= 0.1;
-		      	camera.position.x -= 0.1;
-		      	socket.emit('A_zombie');
-		      }
-		      if(Key.isDown(Key.W)) {
-		        zombie.position.y += 0.1;
-		        camera.position.y += 0.1;
-		      }
-		      if(Key.isDown(Key.S)) {
-		        zombie.position.y -= 0.1;
-		        camera.position.y -= 0.1;
-		      }
-		      if(Key.isDown(Key.D)) {
-		        zombie.position.x += 0.1;
-		        camera.position.x += 0.1;
-		      }
-
-		      // client_move();
-		      // setInterval(update(), 1000);
-		      };
 		    // });
 
 			render();
@@ -93,16 +71,52 @@ $(document).ready(function() {
 	var slayer = new THREE.Mesh(geometry, material);
 	slayer.position.x = 3;
 	slayer.position.y = 1;
-	slayer.rotation.x += 0.1;
-	slayer.rotation.y += 0.1;
 	scene.add(slayer);
 
-	socket.on('message', function(obj) {
-		if('message' in obj) {
-
+	socket.on('message', function(message) {
+		console.log(JSON.stringify(message));
+		if('zombieReturn' in message) {
+			console.log(JSON.stringify(message));
 		}
+		// if('A_Zombie' in message) {
+		// 	// console.log('returned ' + message);
+		// }
+		// if('id' in message) {
+		// 	console.log(message);
+		// } else {
+		// 	// console.log(obj.session.id);
+		// }
+	});
+
+	socket.on('zombieReturn', function(message) {
+		console.log('zombieReturn');
 	});
 });
+
+		    	function movement() {
+		      if(Key.isDown(Key.A)) {
+		      	zombie.position.x -= 0.1;
+		      	camera.position.x -= 0.1;
+		      	socket.send({'A_Zombie': [zombie.position]});
+		      	console.log(zombie.position);
+		      }
+		      if(Key.isDown(Key.W)) {
+		        zombie.position.y += 0.1;
+		        camera.position.y += 0.1;
+		        socket.send({'A_Zombie': [zombie.position]});
+		      }
+		      if(Key.isDown(Key.S)) {
+		        zombie.position.y -= 0.1;
+		        camera.position.y -= 0.1;
+		      }
+		      if(Key.isDown(Key.D)) {
+		        zombie.position.x += 0.1;
+		        camera.position.x += 0.1;
+		      }
+
+		      // client_move();
+		      // setInterval(update(), 1000);
+		      };
 // socket.on('message', function(obj) {
 
 // });

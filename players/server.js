@@ -4,7 +4,7 @@ var http = require('http'),
     io = require('socket.io'),
     THREE = require('three');
 
-var server
+var server,
     players = [];
 
 server = http.createServer(function(req, res){
@@ -43,25 +43,22 @@ var socket = io.listen(server);
 socket.on('connection', function(client){
 
     client.id = players.length % 2;
-    players.push(client.id);
+    players.push(client);
     console.log(client.id);
 
-    // client.on('message', function(message) {
-    //     players[client.sessionId] = message;
-    //     console.log(message);
-    //     return client.broadcast({message:[client.sessionId, message]});
-    // });
+    client.send({id: client.id});
+    console.log({id: client.id});
 
-    // client.broadcast.
-
-    client.on('message', function(obj) {
-        if('zombie' in obj) {
-            console.log('zombie x ' + message.zombie.position.x);
+    client.on('message',function(message) {
+        if('A_Zombie' in message) {
+        console.log(message);
+        var i;
+        for(i = 0; i < players.length; i++) {
+            players[i].send({'zombieReturn': message});
         }
-    });
+        } else {
 
-    client.on('A_zombie',function() {
-        console.log('A');
+    }
     });
     
     client.on('disconnect', function() {
