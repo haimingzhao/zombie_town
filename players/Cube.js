@@ -2,7 +2,8 @@ var scene,
 	camera,
 	renderer,
 	zombie,
-	slayer;
+	slayer,
+	clientid; 
 var x, y;
 
 var socket = io.connect();
@@ -73,19 +74,20 @@ $(document).ready(function() {
 	slayer.position.y = 1;
 	scene.add(slayer);
 
-	socket.on('message', function(message) {
-		console.log(JSON.stringify(message));
-		if('zombieReturn' in message) {
-			console.log(JSON.stringify(message));
+	socket.on('message', function(obj) {
+		// console.log('***' + JSON.stringify(obj));
+		if('zombieReturn' in obj) {
+			console.log('zombieReturn ' + JSON.stringify(obj));
+			console.log('x =' + JSON.stringify(obj.zombieReturn.A_Zombie[0].x));
 		}
 		// if('A_Zombie' in message) {
 		// 	// console.log('returned ' + message);
 		// }
-		// if('id' in message) {
-		// 	console.log(message);
-		// } else {
-		// 	// console.log(obj.session.id);
-		// }
+		if('id' in obj) {
+			console.log('***' + JSON.stringify(obj));
+			console.log('***' + obj.id[0]); 
+			// this.clientid = obj.id[0];
+		}
 	});
 
 	socket.on('zombieReturn', function(message) {

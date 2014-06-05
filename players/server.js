@@ -53,6 +53,7 @@ socket.on('connection', function(client){
         if('A_Zombie' in message) {
         console.log(message);
         var i;
+        console.log('players.length' + players.length);
         for(i = 0; i < players.length; i++) {
             players[i].send({'zombieReturn': message});
         }
