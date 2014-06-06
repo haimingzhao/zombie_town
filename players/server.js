@@ -25,7 +25,7 @@ server = http.createServer(function(req, res){
             });
     break;
         default:
-        send404(res, "not found: ");
+        send404(res, "not found: " + path);
     break;
     }
 });
@@ -50,15 +50,18 @@ socket.on('connection', function(client){
     console.log({id: client.id});
 
     client.on('message',function(message) {
-        if('A_Zombie' in message) {
-        console.log(message);
+        if('zombie' in message) {
+        console.log('zombie ' + message);
         var i;
-        console.log('players.length' + players.length);
         for(i = 0; i < players.length; i++) {
-            players[i].send({'zombieReturn': message});
+            players[i].send({'newPosition': message});
         }
-        } else {
-
+        } else if('slayer' in message){
+        console.log('slayer ' + message);
+        var i;
+        for(i = 0; i < players.length; i++) {
+            players[i].send({'newPosition': message});
+        }
     }
     });
     

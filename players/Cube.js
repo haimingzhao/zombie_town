@@ -77,9 +77,9 @@ $(document).ready(function() {
 	socket.on('message', function(obj) {
 		console.log('in message');
 		// console.log('***' + JSON.stringify(obj));
-		if('zombieReturn' in obj) {
-			console.log('zombieReturn ' + JSON.stringify(obj));
-			console.log('x =' + JSON.stringify(obj.zombieReturn.A_Zombie[0].x));
+		if('newPosition' in obj) {
+			// console.log('newPosition ' + JSON.stringify(obj));
+			// console.log('x =' + JSON.stringify(obj.newPosition.zombie[0].x));
 
 			if (clientid === 0) {
 				console.log('We are the zombie.\n'); 
@@ -87,19 +87,37 @@ $(document).ready(function() {
 				console.log('We are the slayer.\n'); 
 			}
 
-			var newx = obj.zombieReturn.A_Zombie[0].x;
-			var newy = obj.zombieReturn.A_Zombie[0].y;
+			var newx;
+			var newy; 
+
+			if ('zombie' in obj.newPosition) {
+				zombie.position.x = obj.newPosition.zombie[0].x;
+				zombie.position.y = obj.newPosition.zombie[0].y;
+				// newx = obj.newPosition.zombie[0].x;
+				// newy = obj.newPosition.zombie[0].y; 
+				// zombie.position.x = newx;
+				// zombie.position.y = newy; 
+			} else {
+				slayer.position.x = obj.newPosition.slayer[0].x;
+				slayer.position.y = obj.newPosition.slayer[0].y;
+				// newx = obj.newPosition.slayer[0].x;
+				// newy = obj.newPosition.slayer[0].y; 
+				// slayer.position.x = newx;
+				// slayer.position.y = newy;
+			}
+
+
 			// var newz...
 
-			if (clientid === 0) /* we are the zombie */ {
-				slayer.position.x = newx; 
-				slayer.position.y = newy; 
-				console.log('We have just updated the slayer position.\n'); 
-			} else { /* we are the slayer */
-				zombie.position.x = newx;
-				zombie.position.y = newy; 
-				console.log('We have just updated the zombie position.\n'); 
-			}
+			// if (clientid === 0) /* we are the zombie */ {
+			// 	slayer.position.x = newx; 
+			// 	slayer.position.y = newy; 
+			// 	console.log('We have just updated the slayer position.\n'); 
+			// } else { /* we are the slayer */
+			// 	zombie.position.x = newx;
+			// 	zombie.position.y = newy; 
+			// 	console.log('We have just updated the zombie position.\n'); 
+			// }
 		}
 		// if('A_Zombie' in message) {
 		// 	// console.log('returned ' + message);
@@ -113,10 +131,6 @@ $(document).ready(function() {
 			// this.clientid = obj.id[0];
 		}
 	});
-
-	socket.on('zombieReturn', function(message) {
-		console.log('zombieReturn');
-	});
 });
 
 		    	function movement() {
@@ -127,21 +141,23 @@ $(document).ready(function() {
 		      	console.log('client id = 0');
 		      	zombie.position.x -= 0.1;
 		      	// camera.position.x -= 0.1;
-		      	socket.send({'A_Zombie': [zombie.position]});
+		      	socket.send({'zombie': [zombie.position]});
 		      	console.log(zombie.position);
 		      }
 		      if(Key.isDown(Key.W)) {
 		        zombie.position.y += 0.1;
 		        // camera.position.y += 0.1;
-		        socket.send({'A_Zombie': [zombie.position]});
+		        socket.send({'zombie': [zombie.position]});
 		      }
 		      if(Key.isDown(Key.S)) {
 		        zombie.position.y -= 0.1;
 		        // camera.position.y -= 0.1;
+		        socket.send({'zombie': [zombie.position]});
 		      }
 		      if(Key.isDown(Key.D)) {
 		        zombie.position.x += 0.1;
 		        // camera.position.x += 0.1;
+		        socket.send({'zombie': [zombie.position]});
 		      }
 
 		      // client_move();
@@ -153,21 +169,23 @@ $(document).ready(function() {
 		     		console.log('client id = 1');
 		     	slayer.position.x -= 0.1;
 		      	// camera.position.x -= 0.1;
-		      	socket.send({'A_Slayer': [slayer.position]});
+		      	socket.send({'slayer': [slayer.position]});
 		      	console.log(slayer.position);
 		      }
 		      if(Key.isDown(Key.W)) {
 		        slayer.position.y += 0.1;
 		        // camera.position.y += 0.1;
-		        socket.send({'A_Slayer': [slayer.position]});
+		        socket.send({'slayer': [slayer.position]});
 		      }
 		      if(Key.isDown(Key.S)) {
 		        slayer.position.y -= 0.1;
 		        // camera.position.y -= 0.1;
+		        socket.send({'slayer': [slayer.position]});
 		      }
 		      if(Key.isDown(Key.D)) {
 		        slayer.position.x += 0.1;
 		        // camera.position.x += 0.1;
+		        socket.send({'slayer': [slayer.position]});
 		      }
 
 		      // client_move();
