@@ -5,10 +5,12 @@ var http = require('http'),
     THREE = require('three');
 
 var server,
-    players = [];
+    players = [],
+    rooms = [];
 
 server = http.createServer(function(req, res){
     var path = url.parse(req.url).pathname;
+    // console.log(path);
     switch (path) {
         case '/lib/three.js':
         case '/lib/keyboard.js':
@@ -23,7 +25,7 @@ server = http.createServer(function(req, res){
             res.write(data, 'utf8');
             res.end();
             });
-    break;
+        break;
         default:
         send404(res, "not found: " + path);
     break;
@@ -44,23 +46,39 @@ socket.on('connection', function(client){
 
     client.id = players.length % 2;
     players.push(client);
-    console.log(client.id);
+    console.log('client id ' + client.id);
 
     client.send({id: client.id});
     console.log({id: client.id});
 
+    // Create each room for 2 players
+    if(client.id === 0) {
+        rooms.push(rooms.length);
+        client.room = rooms.length - 1;
+        client.join(rooms.length - 1);
+    } else if(client.id === 1) {
+        client.room = rooms.length - 1;
+        client.join(rooms.length - 1);
+    }
+    console.log(rooms.length - 1);
+    client.send({room: client.room});
+
     client.on('message',function(message) {
         if('zombie' in message) {
-        console.log('zombie ' + message);
+        console.log('zombie in room ' + client.room + JSON.stringify(message));
         var i;
         for(i = 0; i < players.length; i++) {
-            players[i].send({'newPosition': message});
+            console.log(players[i] + 'room '  + players[i].room);
+            // players[i].send({'newPosition': message});
+            players[i].send({'newPosition': message, 'cur_room': client.room});
         }
         } else if('slayer' in message){
-        console.log('slayer ' + message);
+        console.log('slayer in room ' + client.room + JSON.stringify(message));
         var i;
         for(i = 0; i < players.length; i++) {
-            players[i].send({'newPosition': message});
+            console.log(players[i] +  'room ' + players[i].room);
+            // players[i].send({'newPosition': message});
+            players[i].send({'newPosition': message, 'cur_room': client.room});
         }
     }
     });

@@ -3,8 +3,8 @@ var scene,
 	renderer,
 	zombie,
 	slayer,
-	clientid; 
-var x, y;
+	clientid,
+	room; 
 
 var socket = io.connect();
 
@@ -23,12 +23,12 @@ function init () {
 			zombie = new THREE.Mesh(geometry, material);
 			scene.add(zombie);
 
-				var geometry = new THREE.CubeGeometry(1,1,1);
-	var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
-	slayer = new THREE.Mesh(geometry, material);
-	slayer.position.x = 3;
-	slayer.position.y = 1;
-	scene.add(slayer);
+			var geometry = new THREE.CubeGeometry(1,1,1);
+			var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
+			slayer = new THREE.Mesh(geometry, material);
+			slayer.position.x = 3;
+			slayer.position.y = 1;
+			scene.add(slayer);
 
 			// var geometry = new THREE.CubeGeometry(1,1,1);
 			// var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
@@ -40,31 +40,13 @@ function init () {
 			var render = function () {
 				requestAnimationFrame(render);
 
-				// socket.broadcast('slayer', function() {
-					// slayer.position.x = 2;
-					// slayer.position.y = 2;
-					// slayer.rotation.x += 0.1;
-					// slayer.rotation.y += 0.1;
-				// });
-
-				// socket.emit('zombie', function() {
-	 			// 	zombie.rotation.x += 0.1;
-					// zombie.rotation.y += 0.1;
-				// });
-
 				renderer.render(scene, camera);
 
 				movement();
 
 			}
 
-		    // socket.on('zombie', function movement() {
-		    // });
-
 			render();
-
-		// });
-
 };
 
 $(document).ready(function() {
@@ -75,7 +57,13 @@ $(document).ready(function() {
 	});
 
 	socket.on('message', function(obj) {
+		console.log(obj);
 		console.log('in message');
+
+		if('room' in obj) {
+			console.log('we are in room ' + obj.room);
+			room = obj.room;
+		}
 		// console.log('***' + JSON.stringify(obj));
 		if('newPosition' in obj) {
 			// console.log('newPosition ' + JSON.stringify(obj));
@@ -90,7 +78,11 @@ $(document).ready(function() {
 			var newx;
 			var newy; 
 
-			if ('zombie' in obj.newPosition) {
+			if('cur_room' in obj) {
+				console.log(obj.cur_room);
+				if(obj.cur_room === room) {
+
+					if ('zombie' in obj.newPosition) {
 				zombie.position.x = obj.newPosition.zombie[0].x;
 				zombie.position.y = obj.newPosition.zombie[0].y;
 				// newx = obj.newPosition.zombie[0].x;
@@ -105,6 +97,26 @@ $(document).ready(function() {
 				// slayer.position.x = newx;
 				// slayer.position.y = newy;
 			}
+
+
+				}
+			}
+
+			// if ('zombie' in obj.newPosition) {
+			// 	zombie.position.x = obj.newPosition.zombie[0].x;
+			// 	zombie.position.y = obj.newPosition.zombie[0].y;
+			// 	// newx = obj.newPosition.zombie[0].x;
+			// 	// newy = obj.newPosition.zombie[0].y; 
+			// 	// zombie.position.x = newx;
+			// 	// zombie.position.y = newy; 
+			// } else {
+			// 	slayer.position.x = obj.newPosition.slayer[0].x;
+			// 	slayer.position.y = obj.newPosition.slayer[0].y;
+			// 	// newx = obj.newPosition.slayer[0].x;
+			// 	// newy = obj.newPosition.slayer[0].y; 
+			// 	// slayer.position.x = newx;
+			// 	// slayer.position.y = newy;
+			// }
 
 
 			// var newz...
@@ -160,8 +172,6 @@ $(document).ready(function() {
 		        socket.send({'zombie': [zombie.position]});
 		      }
 
-		      // client_move();
-		      // setInterval(update(), 1000);
 		      } else if(clientid === 1) {
 		     	
 		     	
@@ -188,34 +198,5 @@ $(document).ready(function() {
 		        socket.send({'slayer': [slayer.position]});
 		      }
 
-		      // client_move();
-		      // setInterval(update(), 1000);
 		      }
 		     };
-// socket.on('message', function(obj) {
-
-// });
-
-			// socket.on('message', function (obj) {
-			// 	if('zombie' in message) {
-			// 	zombie.position.x = x;
-			// 	zombie.position.y = y;
-			// 	}
-			// });
-
-			// function update() {
-			// 	var msg = new Message(zombie.position);
-			// 	socket.send(msg);
-			// };
-
-			// function Message(position) {
-			// 	// zombie.position.x = x;
-			// 	// zombie.position.y = y;
-			// 	return zombie;
-			// };
-
-			// // socket.on('message', function(obj) {
-
-			// // });
-
-			// setInterval(update(), 1000/60);
