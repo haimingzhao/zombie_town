@@ -6,7 +6,7 @@ var http = require('http'),
 
 var server,
     players = [],
-    rooms = [];
+    rooms = ['room1'];
 
 server = http.createServer(function(req, res){
     var path = url.parse(req.url).pathname;
@@ -44,7 +44,7 @@ server.listen(3000);
 var socket = io.listen(server); 
 socket.on('connection', function(client){
 
-    client.id = players.length % 2;
+    client.id = players.length;
     players.push(client);
     console.log('client id ' + client.id);
 
@@ -52,35 +52,46 @@ socket.on('connection', function(client){
     console.log({id: client.id});
 
     // Create each room for 2 players
-    if(client.id === 0) {
-        rooms.push(rooms.length);
-        client.room = rooms.length - 1;
-        client.join(rooms.length - 1);
-    } else if(client.id === 1) {
-        client.room = rooms.length - 1;
-        client.join(rooms.length - 1);
-    }
-    console.log(rooms.length - 1);
+    // if(client.id%2 === 0) {
+    //     //rooms.push(rooms.length);
+    //     client.room = 'room1';
+    //     client.join('room1');
+    // } else if(client.id%2 === 1) {
+    //     client.room = 'room1';
+    //     client.join('room1');
+    // }
+    client.room = 'room' + (Math.floor(client.id/2)).toString();
+
+    // console.log(rooms.length - 1);
     client.send({room: client.room});
 
     client.on('message',function(message) {
         if('zombie' in message) {
-        console.log('zombie in room ' + client.room + JSON.stringify(message));
-        var i;
-        for(i = 0; i < players.length; i++) {
-            console.log(players[i] + 'room '  + players[i].room);
-            // players[i].send({'newPosition': message});
-            players[i].send({'newPosition': message, 'cur_room': client.room});
-        }
+            console.log('zombie in room ' + client.room + JSON.stringify(message));
+            // if(client.id%2 === 0) {
+                players[client.id+1].send({'newPosition': message});
+            // }
+            // } else {
+            //     // if(client.id%2 === 1) {
+            //     players[cilent.id-1].send({'newPosition': message});
+            // // }
+            // }
+            // var i;
+            // for(i = 0; i < players.length; i++) {
+            //     console.log(players[i] + 'room '  + players[i].room);
+            //     players[i].in('room1').send({'newPosition': message});
+            //     // players[i].send({'newPosition': message, 'cur_room': client.room});
+            // }
         } else if('slayer' in message){
-        console.log('slayer in room ' + client.room + JSON.stringify(message));
-        var i;
-        for(i = 0; i < players.length; i++) {
-            console.log(players[i] +  'room ' + players[i].room);
-            // players[i].send({'newPosition': message});
-            players[i].send({'newPosition': message, 'cur_room': client.room});
+            console.log('slayer in room ' + client.room + JSON.stringify(message));
+            players[client.id-1].send({'newPosition': message});
+            // var i;
+            // for(i = 0; i < players.length; i++) {
+            //     console.log(players[i] +  'room ' + players[i].room);
+            //     players[i].in('room1').send({'newPosition': message});
+            //     players[i].send({'newPosition': message, 'cur_room': client.room});
+            // }
         }
-    }
     });
     
     client.on('disconnect', function() {

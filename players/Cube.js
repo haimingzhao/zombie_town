@@ -78,11 +78,11 @@ $(document).ready(function() {
 			var newx;
 			var newy; 
 
-			if('cur_room' in obj) {
-				console.log(obj.cur_room);
-				if(obj.cur_room === room) {
+			// if('cur_room' in obj) {
+			// 	console.log(obj.cur_room);
+			// 	if(obj.cur_room === room) {
 
-					if ('zombie' in obj.newPosition) {
+			if ('zombie' in obj.newPosition) {
 				zombie.position.x = obj.newPosition.zombie[0].x;
 				zombie.position.y = obj.newPosition.zombie[0].y;
 				// newx = obj.newPosition.zombie[0].x;
@@ -99,8 +99,8 @@ $(document).ready(function() {
 			}
 
 
-				}
-			}
+			// 	}
+			// }
 
 			// if ('zombie' in obj.newPosition) {
 			// 	zombie.position.x = obj.newPosition.zombie[0].x;
@@ -145,10 +145,8 @@ $(document).ready(function() {
 	});
 });
 
-		    	function movement() {
-		    					if (clientid === 0) {
-
-		    	
+	function movement() {
+		if (clientid%2 === 0) {  	
 		      if(Key.isDown(Key.A)) {
 		      	console.log('client id = 0');
 		      	zombie.position.x -= 0.1;
@@ -172,10 +170,10 @@ $(document).ready(function() {
 		        socket.send({'zombie': [zombie.position]});
 		      }
 
-		      } else if(clientid === 1) {
+		} else if(clientid%2 === 1) {
 		     	
 		     	
-		     	if(Key.isDown(Key.A)) {
+		     if(Key.isDown(Key.A)) {
 		     		console.log('client id = 1');
 		     	slayer.position.x -= 0.1;
 		      	// camera.position.x -= 0.1;
@@ -198,5 +196,5 @@ $(document).ready(function() {
 		        socket.send({'slayer': [slayer.position]});
 		      }
 
-		      }
-		     };
+		}
+};
