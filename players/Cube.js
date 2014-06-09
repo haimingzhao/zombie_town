@@ -139,26 +139,38 @@ function movement() {
 
 	} else if(clientid%2 === 1) {     	
 	    if(Key.isDown(Key.A)) {
+	    	keyPressed = 'A';
+        	if(!inSolidRange(keyPressed)){
 			console.log('client id = 1');
 			slayer.position.x -= 0.1;
 			// camera.position.x -= 0.1;
 			socket.send({'slayer': [slayer.position]});
 			console.log(slayer.position);
+			}
 		}
 		if(Key.isDown(Key.W)) {
+			keyPressed = 'W';
+        	if(!inSolidRange(keyPressed)){
 		    slayer.position.y += 0.1;
 		    // camera.position.y += 0.1;
 		    socket.send({'slayer': [slayer.position]});
 		    }
+		}
 		if(Key.isDown(Key.S)) {
+			keyPressed = 'S';
+        	if(!inSolidRange(keyPressed)){
 		    slayer.position.y -= 0.1;
 		    // camera.position.y -= 0.1;
 		    socket.send({'slayer': [slayer.position]});
 		}
+		}
 		if(Key.isDown(Key.D)) {
+			keyPressed = 'D';
+        	if(!inSolidRange(keyPressed)){
 		    slayer.position.x += 0.1;
 		    // camera.position.x += 0.1;
 		    socket.send({'slayer': [slayer.position]});
+		}
 		}
 	}
 };
@@ -222,7 +234,7 @@ function inSolidRange(keyPressed) {
 			// 					&& ((zombiePosX > slayerPosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
 			// 					&& (( zombiePosX > slayerPosX + 0.75) && (zombiePosY < slayerPosY + 0.75)));
 		}
-	}
+	// }
 		// if(
 		// 	((zombiePosX < slayerPosX + 0.5) && (zombiePosY < slayerPosY + 0.5)) 
 		// 	&& ((zombiePosX < slayerPosX + 0.5) && (zombiePosY > slayerPosY - 0.5))
@@ -231,7 +243,17 @@ function inSolidRange(keyPressed) {
 		// 	) {
 		// 	isInRange = true;
 		// }
-	// } else if(clientid%2 === 1) {
+	} else if(clientid%2 === 1) {
+		var newSlayerPos = slayer.position; 
+		switch(keyPressed) {
+			case 'W' : 	newSlayerPos.y = slayer.position.y + 0.1; 
+							return inViolation(newSlayerPos, zombie.position, 'W');
+			case 'S' : 	newSlayerPos.y = slayer.position.y - 0.1; 
+							return inViolation(newSlayerPos, zombie.position, 'S');
+			case 'A' : 	newSlayerPos.x = slayer.position.x - 0.1; 
+							return inViolation(newSlayerPos, zombie.position, 'A');
+			case 'D' :	newSlayerPos.x = slayer.position.x + 0.1; 
+							return inViolation(newSlayerPos, zombie.position, 'D');
 	// 	if((
 	// 		(slayerPosX < zombiePosX + 0.5) && (slayerPosY < zombiePosY + 0.5)) 
 	// 		&& ((slayerPosX < zombiePosX + 0.5) && (slayerPosY > zombiePosY - 0.5))
@@ -239,37 +261,151 @@ function inSolidRange(keyPressed) {
 	// 		&& ((slayerPosX > zombiePosX - 0.5) && (slayerPosY < zombiePosY + 0.5))
 	// 		) {
 	// 		isInRange = true;
-	// 	}
-	// }
+		}
+	}
 	// return isInRange;
 };
 
-function inViolation(newZombiePos, slayerPos, dir) {
+function inViolation(newPlayerPos, opponentPos, dir) {
+	var xPos = false;
+	var yPos = false;
+	var xOpPos = false; 
+	var yOpPos = false; 
+
+	if (newPlayerPos.x === Math.abs(newPlayerPos.x)) {
+		xPos = true; 
+	} 
+
+	if (newPlayerPos.y === Math.abs(newPlayerPos.y)) {
+		yPos = true; 
+	}
+
+	if (opponentPos.x === Math.abs(opponentPos.x)) {
+		xOpPos = true; 
+	} 
+
+	if (opponentPos.y === Math.abs(opponentPos.y)) {
+		yOpPos = true; 
+	}
+
+	newPlayerPos.x = Math.abs(newPlayerPos.x);
+	newPlayerPos.y = Math.abs(newPlayerPos.y);
+	opponentPos.x = Math.abs(opponentPos.x);
+	opponentPos.y = Math.abs(opponentPos.y);
+
 	if (((dir === 'A') || (dir === 'D')) && 
-		(newZombiePos.x < slayerPos.x + 1) && (newZombiePos.x > slayerPos.x - 1) && 
-		(newZombiePos.y < slayerPos.y + 1) && (newZombiePos.y > slayerPos.y - 1)) {
+		(newPlayerPos.x < opponentPos.x + 1) && (newPlayerPos.x > opponentPos.x - 1) && 
+		(newPlayerPos.y < opponentPos.y + 1) && (newPlayerPos.y > opponentPos.y - 1)) {
 
 		if (dir === 'A') {
-			newZombiePos.x += 0.1;
+			if (xPos) {
+				newPlayerPos.x += 0.1;
+			} else {
+				newPlayerPos.x = -newPlayerPos.x; 
+				newPlayerPos.x += 0.1;
+			}
+
+			if (!yPos) {
+				newPlayerPos.y = -newPlayerPos.y; 
+			}
+
+			if (!xOpPos) {
+				opponentPos.x = -opponentPos.x; 
+			}
+
+			if (!yOpPos) {
+				opponentPos.y = -opponentPos.y; 
+			}
+
 		} else {
-			newZombiePos.x -= 0.1; 
+			if (xPos) {
+				newPlayerPos.x -= 0.1;
+			} else {
+				newPlayerPos.x = -newPlayerPos.x; 
+				newPlayerPos.x -= 0.1; 
+			} 
+
+			if (!yPos) {
+				newPlayerPos.y = -newPlayerPos.y; 
+			}
+
+
+			if (!xOpPos) {
+				opponentPos.x = -opponentPos.x; 
+			}
+
+			if (!yOpPos) {
+				opponentPos.y = -opponentPos.y; 
+			}
 		}
 
 		console.log("Violating in X domain.\n");
 		return true;
 	} else if (((dir === 'W') || (dir === 'S')) && 
-		(newZombiePos.y < slayerPos.y + 1) && (newZombiePos.y > slayerPos.y - 1) && 
-		(newZombiePos.x < slayerPos.x + 1) && (newZombiePos.x > slayerPos.x - 1)) {
+		(newPlayerPos.y < opponentPos.y + 1) && (newPlayerPos.y > opponentPos.y - 1) && 
+		(newPlayerPos.x < opponentPos.x + 1) && (newPlayerPos.x > opponentPos.x - 1)) {
 
 		if (dir === 'S') {
-			newZombiePos.y += 0.1;
+			if (yPos) {
+				newPlayerPos.y += 0.1;
+			} else {
+				newPlayerPos.y = -newPlayerPos.y;
+				newPlayerPos.y += 0.1; 
+			}
+
+			if (!xPos) {
+				newPlayerPos.x = -newPlayerPos.x; 
+			}
+
+			if (!xOpPos) {
+				opponentPos.x = -opponentPos.x; 
+			}
+
+			if (!yOpPos) {
+				opponentPos.y = -opponentPos.y; 
+			}
+
 		} else {
-			newZombiePos.y -= 0.1; 
+			if (yPos) {
+				newPlayerPos.y -= 0.1;
+			} else {
+				newPlayerPos.y = -newPlayerPos.y;
+				newPlayerPos.y -= 0.1; 
+			}
+
+			if (!xPos) {
+				newPlayerPos.x = -newPlayerPos.x; 
+			}
+
+			if (!xOpPos) {
+				opponentPos.x = -opponentPos.x; 
+			}
+
+			if (!yOpPos) {
+				opponentPos.y = -opponentPos.y; 
+			}
+
 		}
 
 		console.log("Violating in Y domain.\n");
 		return true; 
 	} else {
+
+			if (!xPos) {
+				newPlayerPos.x = -newPlayerPos.x; 
+			}
+
+			if (!yPos) {
+				newPlayerPos.y = -newPlayerPos.y; 
+			}
+
+			if (!xOpPos) {
+				opponentPos.x = -opponentPos.x; 
+			}
+
+			if (!yOpPos) {
+				opponentPos.y = -opponentPos.y; 
+			}
 		console.log("Not violating.\n"); 
 		return false; 
 	}
