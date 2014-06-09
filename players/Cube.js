@@ -68,6 +68,7 @@ $(document).ready(function() {
 				zombie.position.y = obj.newPosition.zombie[0].y;
 				if(inRange()) {
 					console.log('zombie turned slayer');
+					socket.send({'zombieWin': [clientid]});
 				}
 
 			} else {
@@ -75,6 +76,7 @@ $(document).ready(function() {
 				slayer.position.y = obj.newPosition.slayer[0].y;
 				if(inRange()) {
 					console.log('slayer killed zombie');
+					socket.send({'slayerWin': [clientid]});
 				}
 			}
 		}

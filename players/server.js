@@ -60,15 +60,14 @@ socket.on('connection', function(client){
             console.log('slayer in room ' + client.room + JSON.stringify(message));
             players[client.id-1].send({'newPosition': message});
         }
+        if('zombieWin' in message) {
+            console.log('zombieWin!!!');
+        }
+        if('slayerWin' in message) {
+            console.log('slayerWin!!');
+        }
     });
 
-    client.on('zombieWin', function(message) {
-        console.log('zombie wins!!');
-    });
-    client.on('slayerWin', function(message) {
-        console.log('slayer wins!!');
-    });
-    
     client.on('disconnect', function() {
         players.splice(client.sessionId,1);
         console.log('disconnect');
