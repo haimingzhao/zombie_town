@@ -4,7 +4,8 @@ var scene,
 	zombie,
 	slayer,
 	clientid,
-	room; 
+	room,
+	keyPressed; 
 
 var socket = io.connect();
 
@@ -99,26 +100,41 @@ $(document).ready(function() {
 function movement() {
 	if (clientid%2 === 0) {  	
         if(Key.isDown(Key.A)) {
-	      	console.log('client id = 0');
-	      	zombie.position.x -= 0.1;
-	      	// camera.position.x -= 0.1;
-	      	socket.send({'zombie': [zombie.position]});
-	      	console.log(zombie.position);
+        	keyPressed = 'A';
+        	if(!inSolidRange(keyPressed)){
+        	// if((slayer.position.x + 0.5 < zombie.position.x) && (slayer.position.y)) {
+        		// if(!inSolidRange()) {
+		      	console.log('client id = 0');	
+		      	zombie.position.x -= 0.1;
+		      	// camera.position.x -= 0.1;
+		      	socket.send({'zombie': [zombie.position]});
+		      	console.log(zombie.position);
+	      }
         }
         if(Key.isDown(Key.W)) {
-	        zombie.position.y += 0.1;
-	        // camera.position.y += 0.1;
-	        socket.send({'zombie': [zombie.position]});
+        	 keyPressed = 'W';
+        	if(!inSolidRange(keyPressed)){
+	        	zombie.position.y += 0.1;
+	        	// camera.position.y += 0.1;
+	        	socket.send({'zombie': [zombie.position]});
+	    	}
         }
         if(Key.isDown(Key.S)) {
-	        zombie.position.y -= 0.1;
-	        // camera.position.y -= 0.1;
-	        socket.send({'zombie': [zombie.position]});
+        	keyPressed = 'S';
+        	if(!inSolidRange(keyPressed)){
+		        zombie.position.y -= 0.1;
+		        // camera.position.y -= 0.1;
+		        socket.send({'zombie': [zombie.position]});
+	    	}
         }
         if(Key.isDown(Key.D)) {
-	        zombie.position.x += 0.1;
-	        // camera.position.x += 0.1;
-	        socket.send({'zombie': [zombie.position]});
+        	keyPressed = 'D';
+        	if(!inSolidRange(keyPressed)) {
+		        zombie.position.x += 0.1;
+		        // camera.position.x += 0.1;
+		        socket.send({'zombie': [zombie.position]});
+	    	}
+
         }
 
 	} else if(clientid%2 === 1) {     	
@@ -174,3 +190,87 @@ function inRange() {
 	}
 	return isInRange;
 };
+
+function inSolidRange(keyPressed) {
+	var isInRange = false,
+		slayerPosX = slayer.position.x,
+		slayerPosY = slayer.position.y,
+		zombiePosX = zombie.position.x,
+		zombiePosY = zombie.position.y;
+
+	if(clientid%2 === 0) {
+		var newZombiePos = zombie.position; 
+		switch(keyPressed) {
+			// case 'A': return (((zombiePosX < slayerPosX - 0.75) && (zombiePosY < slayerPosY + 0.75)) 
+			// 					&& ((zombiePosX < slayerPosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& ((zombiePosX < slayerPosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& ((zombiePosX < slayerPosX + 0.75) && (zombiePosY < slayerPosY + 0.75)));
+			// case 'D': return (((slayerPosX < zombiePosX - 0.75) && (zombiePosY < slayerPosY + 0.75)) 
+			// 					&& ((slayerPosX < zombiePosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& ((slayerPosX < zombiePosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& ((slayerPosX < zombiePosX + 0.75) && (zombiePosY < slayerPosY + 0.75)));
+			case 'W' : 	newZombiePos.y = zombie.position.y + 0.1; 
+							return inViolation(newZombiePos, slayer.position, 'W');
+			case 'S' : 	newZombiePos.y = zombie.position.y - 0.1; 
+							return inViolation(newZombiePos, slayer.position, 'S');
+			case 'A' : 	newZombiePos.x = zombie.position.x - 0.1; 
+							return inViolation(newZombiePos, slayer.position, 'A');
+			case 'D' :	newZombiePos.x = zombie.position.x + 0.1; 
+							return inViolation(newZombiePos, slayer.position, 'D');
+			// case 'D': return (((zombiePosX > slayerPosX - 0.75) && (zombiePosY < slayerPosY + 0.75)) 
+			// 					&& ((zombiePosX > slayerPosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& ((zombiePosX > slayerPosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
+			// 					&& (( zombiePosX > slayerPosX + 0.75) && (zombiePosY < slayerPosY + 0.75)));
+		}
+	}
+		// if(
+		// 	((zombiePosX < slayerPosX + 0.5) && (zombiePosY < slayerPosY + 0.5)) 
+		// 	&& ((zombiePosX < slayerPosX + 0.5) && (zombiePosY > slayerPosY - 0.5))
+		// 	&& ((zombiePosX > slayerPosX - 0.5) && (zombiePosY > slayerPosY - 0.5)) 
+		// 	&& ((zombiePosX > slayerPosX - 0.5) && (zombiePosY < slayerPosY + 0.5))
+		// 	) {
+		// 	isInRange = true;
+		// }
+	// } else if(clientid%2 === 1) {
+	// 	if((
+	// 		(slayerPosX < zombiePosX + 0.5) && (slayerPosY < zombiePosY + 0.5)) 
+	// 		&& ((slayerPosX < zombiePosX + 0.5) && (slayerPosY > zombiePosY - 0.5))
+	// 		&& ((slayerPosX > zombiePosX - 0.5) && (slayerPosY > zombiePosY - 0.5)) 
+	// 		&& ((slayerPosX > zombiePosX - 0.5) && (slayerPosY < zombiePosY + 0.5))
+	// 		) {
+	// 		isInRange = true;
+	// 	}
+	// }
+	// return isInRange;
+};
+
+function inViolation(newZombiePos, slayerPos, dir) {
+	if (((dir === 'A') || (dir === 'D')) && 
+		(newZombiePos.x < slayerPos.x + 1) && (newZombiePos.x > slayerPos.x - 1) && 
+		(newZombiePos.y < slayerPos.y + 1) && (newZombiePos.y > slayerPos.y - 1)) {
+
+		if (dir === 'A') {
+			newZombiePos.x += 0.1;
+		} else {
+			newZombiePos.x -= 0.1; 
+		}
+
+		console.log("Violating in X domain.\n");
+		return true;
+	} else if (((dir === 'W') || (dir === 'S')) && 
+		(newZombiePos.y < slayerPos.y + 1) && (newZombiePos.y > slayerPos.y - 1) && 
+		(newZombiePos.x < slayerPos.x + 1) && (newZombiePos.x > slayerPos.x - 1)) {
+
+		if (dir === 'S') {
+			newZombiePos.y += 0.1;
+		} else {
+			newZombiePos.y -= 0.1; 
+		}
+
+		console.log("Violating in Y domain.\n");
+		return true; 
+	} else {
+		console.log("Not violating.\n"); 
+		return false; 
+	}
+}
