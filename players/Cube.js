@@ -85,6 +85,14 @@ $(document).ready(function() {
 			clientid = obj.id; 
 			console.log('after assignment ' + JSON.stringify(clientid));
 		}
+		if('playerDisconnect' in obj) {
+			console.log(obj.playerDisconnect + 'disconnected');
+			if(obj.playerDisconnect%2 === 0) {
+				scene.remove(zombie);
+			} else {
+				scene.remove(slayer);
+			}
+		}
 	});
 });
 
@@ -145,9 +153,7 @@ function inRange() {
 		slayerPosY = slayer.position.y,
 		zombiePosX = zombie.position.x,
 		zombiePosY = zombie.position.y;
-		console.log('slayer: ' + slayerPosX + ' ' + slayerPosY);
-		console.log('zombie: ' + zombiePosX + ' ' + zombiePosY);
-	if(clientid === 0) {
+	if(clientid%2 === 0) {
 		if(
 			((zombiePosX < slayerPosX + 1) && (zombiePosY < slayerPosY + 1)) 
 			&& ((zombiePosX < slayerPosX + 1) && (zombiePosY > slayerPosY - 1))
@@ -156,7 +162,7 @@ function inRange() {
 			) {
 			isInRange = true;
 		}
-	} else if(clientid === 1) {
+	} else if(clientid%2 === 1) {
 		if((
 			(slayerPosX < zombiePosX + 1) && (slayerPosY < zombiePosY + 1)) 
 			&& ((slayerPosX < zombiePosX + 1) && (slayerPosY > zombiePosY - 1))

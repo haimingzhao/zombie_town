@@ -69,8 +69,13 @@ socket.on('connection', function(client){
     });
 
     client.on('disconnect', function() {
-        players.splice(client.sessionId,1);
-        console.log('disconnect');
-        return client.emit({ disconnect: [client.sessionId]})
+        players.splice(client.id, client.id);
+        console.log(players);
+        if(client.id === 0) {
+            players[client.id+1].send({'playerDisconnect': client.id});
+        }
+        if(client.id === 1) {
+            players[client.id-1].send({'playerDisconnect': client.id});
+        }
     });
 });
