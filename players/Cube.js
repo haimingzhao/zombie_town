@@ -211,7 +211,7 @@ function inSolidRange(keyPressed) {
 		zombiePosY = zombie.position.y;
 
 	if(clientid%2 === 0) {
-		var newZombiePos = zombie.position; 
+		// var newZombiePos = zombie.position; 
 		switch(keyPressed) {
 			// case 'A': return (((zombiePosX < slayerPosX - 0.75) && (zombiePosY < slayerPosY + 0.75)) 
 			// 					&& ((zombiePosX < slayerPosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
@@ -221,14 +221,14 @@ function inSolidRange(keyPressed) {
 			// 					&& ((slayerPosX < zombiePosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
 			// 					&& ((slayerPosX < zombiePosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
 			// 					&& ((slayerPosX < zombiePosX + 0.75) && (zombiePosY < slayerPosY + 0.75)));
-			case 'W' : 	newZombiePos.y = zombie.position.y + 0.1; 
-							return inViolation(newZombiePos, slayer.position, 'W');
-			case 'S' : 	newZombiePos.y = zombie.position.y - 0.1; 
-							return inViolation(newZombiePos, slayer.position, 'S');
-			case 'A' : 	newZombiePos.x = zombie.position.x - 0.1; 
-							return inViolation(newZombiePos, slayer.position, 'A');
-			case 'D' :	newZombiePos.x = zombie.position.x + 0.1; 
-							return inViolation(newZombiePos, slayer.position, 'D');
+			case 'W' : 	//newZombiePos.y = zombie.position.y + 0.1; 
+							return inViolation(zombiePosX, zombiePosY + 0.1, slayer.position, 'W');
+			case 'S' : 	//newZombiePos.y = zombie.position.y - 0.1; 
+							return inViolation(zombiePosX,  zombiePosY - 0.1, slayer.position, 'S');
+			case 'A' : //	newZombiePos.x = zombie.position.x - 0.1; 
+							return inViolation(zombiePosX - 0.1,  zombiePosY, slayer.position, 'A');
+			case 'D' :	//newZombiePos.x = zombie.position.x + 0.1; 
+							return inViolation(zombiePosX + 0.1,  zombiePosY, slayer.position, 'D');
 			// case 'D': return (((zombiePosX > slayerPosX - 0.75) && (zombiePosY < slayerPosY + 0.75)) 
 			// 					&& ((zombiePosX > slayerPosX - 0.75) && (zombiePosY > slayerPosY - 0.75))
 			// 					&& ((zombiePosX > slayerPosX + 0.75) && (zombiePosY > slayerPosY - 0.75))
@@ -266,146 +266,147 @@ function inSolidRange(keyPressed) {
 	// return isInRange;
 };
 
-function inViolation(newPlayerPos, opponentPos, dir) {
-	var xPos = false;
-	var yPos = false;
-	var xOpPos = false; 
-	var yOpPos = false; 
+function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
+	// var xPos = false;
+	// var yPos = false;
+	// var xOpPos = false; 
+	// var yOpPos = false; 
 
-	if (newPlayerPos.x === Math.abs(newPlayerPos.x)) {
-		xPos = true; 
-	} 
+	// if (newPlayerPos.x === Math.abs(newPlayerPos.x)) {
+	// 	xPos = true; 
+	// } 
 
-	if (newPlayerPos.y === Math.abs(newPlayerPos.y)) {
-		yPos = true; 
-	}
+	// if (newPlayerPos.y === Math.abs(newPlayerPos.y)) {
+	// 	yPos = true; 
+	// }
 
-	if (opponentPos.x === Math.abs(opponentPos.x)) {
-		xOpPos = true; 
-	} 
+	// if (opponentPos.x === Math.abs(opponentPos.x)) {
+	// 	xOpPos = true; 
+	// } 
 
-	if (opponentPos.y === Math.abs(opponentPos.y)) {
-		yOpPos = true; 
-	}
+	// if (opponentPos.y === Math.abs(opponentPos.y)) {
+	// 	yOpPos = true; 
+	// }
 
-	newPlayerPos.x = Math.abs(newPlayerPos.x);
-	newPlayerPos.y = Math.abs(newPlayerPos.y);
-	opponentPos.x = Math.abs(opponentPos.x);
-	opponentPos.y = Math.abs(opponentPos.y);
+	// newPlayerX = Math.abs(newPlayerX);
+	// newPlayerY = Math.abs(newPlayerY);
+	// opponentPos.x = Math.abs(opponentPos.x);
+	// opponentPos.y = Math.abs(opponentPos.y);
 
 	if (((dir === 'A') || (dir === 'D')) && 
-		(newPlayerPos.x < opponentPos.x + 1) && (newPlayerPos.x > opponentPos.x - 1) && 
-		(newPlayerPos.y < opponentPos.y + 1) && (newPlayerPos.y > opponentPos.y - 1)) {
+		(newPlayerX < opponentPos.x + 1) && (newPlayerX > opponentPos.x - 1) && 
+		(newPlayerY < opponentPos.y + 1) && (newPlayerY > opponentPos.y - 1)) {
+	return true; 
+		// if (dir === 'A') {
+		// 	if (xPos) {
+		// 		newPlayerPos.x += 0.1;
+		// 	} else {
+		// 		newPlayerPos.x = -newPlayerPos.x; 
+		// 		newPlayerPos.x += 0.1;
+		// 	}
 
-		if (dir === 'A') {
-			if (xPos) {
-				newPlayerPos.x += 0.1;
-			} else {
-				newPlayerPos.x = -newPlayerPos.x; 
-				newPlayerPos.x += 0.1;
-			}
+		// 	if (!yPos) {
+		// 		newPlayerPos.y = -newPlayerPos.y; 
+		// 	}
 
-			if (!yPos) {
-				newPlayerPos.y = -newPlayerPos.y; 
-			}
+		// 	if (!xOpPos) {
+		// 		opponentPos.x = -opponentPos.x; 
+		// 	}
 
-			if (!xOpPos) {
-				opponentPos.x = -opponentPos.x; 
-			}
+		// 	if (!yOpPos) {
+		// 		opponentPos.y = -opponentPos.y; 
+		// 	}
 
-			if (!yOpPos) {
-				opponentPos.y = -opponentPos.y; 
-			}
+		// } else {
+			// if (xPos) {
+			// 	newPlayerPos.x -= 0.1;
+			// } else {
+			// 	newPlayerPos.x = -newPlayerPos.x; 
+			// 	newPlayerPos.x -= 0.1; 
+			// } 
 
-		} else {
-			if (xPos) {
-				newPlayerPos.x -= 0.1;
-			} else {
-				newPlayerPos.x = -newPlayerPos.x; 
-				newPlayerPos.x -= 0.1; 
-			} 
-
-			if (!yPos) {
-				newPlayerPos.y = -newPlayerPos.y; 
-			}
+			// if (!yPos) {
+			// 	newPlayerPos.y = -newPlayerPos.y; 
+			// }
 
 
-			if (!xOpPos) {
-				opponentPos.x = -opponentPos.x; 
-			}
+			// if (!xOpPos) {
+			// 	opponentPos.x = -opponentPos.x; 
+			// }
 
-			if (!yOpPos) {
-				opponentPos.y = -opponentPos.y; 
-			}
-		}
+			// if (!yOpPos) {
+			// 	opponentPos.y = -opponentPos.y; 
+			// }
+		// }
 
 		console.log("Violating in X domain.\n");
 		return true;
 	} else if (((dir === 'W') || (dir === 'S')) && 
-		(newPlayerPos.y < opponentPos.y + 1) && (newPlayerPos.y > opponentPos.y - 1) && 
-		(newPlayerPos.x < opponentPos.x + 1) && (newPlayerPos.x > opponentPos.x - 1)) {
+		(newPlayerY < opponentPos.y + 1) && (newPlayerY > opponentPos.y - 1) && 
+		(newPlayerX < opponentPos.x + 1) && (newPlayerX > opponentPos.x - 1)) {
 
-		if (dir === 'S') {
-			if (yPos) {
-				newPlayerPos.y += 0.1;
-			} else {
-				newPlayerPos.y = -newPlayerPos.y;
-				newPlayerPos.y += 0.1; 
-			}
+		return true; 
+		// if (dir === 'S') {
+			// if (yPos) {
+			// 	newPlayerPos.y += 0.1;
+			// } else {
+			// 	newPlayerPos.y = -newPlayerPos.y;
+			// 	newPlayerPos.y += 0.1; 
+			// }
 
-			if (!xPos) {
-				newPlayerPos.x = -newPlayerPos.x; 
-			}
+			// if (!xPos) {
+			// 	newPlayerPos.x = -newPlayerPos.x; 
+			// }
 
-			if (!xOpPos) {
-				opponentPos.x = -opponentPos.x; 
-			}
+			// if (!xOpPos) {
+			// 	opponentPos.x = -opponentPos.x; 
+			// }
 
-			if (!yOpPos) {
-				opponentPos.y = -opponentPos.y; 
-			}
+			// if (!yOpPos) {
+			// 	opponentPos.y = -opponentPos.y; 
+			// }
 
-		} else {
-			if (yPos) {
-				newPlayerPos.y -= 0.1;
-			} else {
-				newPlayerPos.y = -newPlayerPos.y;
-				newPlayerPos.y -= 0.1; 
-			}
+		// } else {
+			// if (yPos) {
+			// 	newPlayerPos.y -= 0.1;
+			// } else {
+			// 	newPlayerPos.y = -newPlayerPos.y;
+			// 	newPlayerPos.y -= 0.1; 
+			// }
 
-			if (!xPos) {
-				newPlayerPos.x = -newPlayerPos.x; 
-			}
+			// if (!xPos) {
+			// 	newPlayerPos.x = -newPlayerPos.x; 
+			// }
 
-			if (!xOpPos) {
-				opponentPos.x = -opponentPos.x; 
-			}
+			// if (!xOpPos) {
+			// 	opponentPos.x = -opponentPos.x; 
+			// }
 
-			if (!yOpPos) {
-				opponentPos.y = -opponentPos.y; 
-			}
+			// if (!yOpPos) {
+			// 	opponentPos.y = -opponentPos.y; 
+			// }
 
-		}
+		// }
 
 		console.log("Violating in Y domain.\n");
 		return true; 
 	} else {
 
-			if (!xPos) {
-				newPlayerPos.x = -newPlayerPos.x; 
-			}
+			// if (!xPos) {
+			// 	newPlayerPos.x = -newPlayerPos.x; 
+			// }
 
-			if (!yPos) {
-				newPlayerPos.y = -newPlayerPos.y; 
-			}
+			// if (!yPos) {
+			// 	newPlayerPos.y = -newPlayerPos.y; 
+			// }
 
-			if (!xOpPos) {
-				opponentPos.x = -opponentPos.x; 
-			}
+			// if (!xOpPos) {
+			// 	opponentPos.x = -opponentPos.x; 
+			// }
 
-			if (!yOpPos) {
-				opponentPos.y = -opponentPos.y; 
-			}
+			// if (!yOpPos) {
+			// 	opponentPos.y = -opponentPos.y; 
+			// }
 		console.log("Not violating.\n"); 
 		return false; 
 	}
