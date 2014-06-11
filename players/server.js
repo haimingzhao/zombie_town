@@ -17,20 +17,20 @@ server = http.createServer(function(req, res){
         case '/basic_map/js/three.min.js':
         case '/basic_map/js/TrackballControls.js':
         case '/basic_map/models/map1/map1.js':
-        case '/basic_map/models/map1//Hedges0029_1_S.jpg':
-        case '/basic_map/models/map1//TilesPlain0041_2_S.jpg':
-        case '/basic_map/models/map1//CardboardPlain0008_1_S.jpg':
-        case '/basic_map/models/map1//WoodPlanksPainted0076_25_S.jpg':
-        case '/basic_map/models/map1//RooftilesSlate0088_5_S.jpg':
-        case '/basic_map/models/map1//MetalFloorsPainted0044_36_S.jpg':
-        case '/basic_map/models/map1//RooftilesMetal0018_15_S.jpg':
-        case '/basic_map/models/map1//ConcreteFence0028_1_S.jpg':
-        case '/basic_map/models/map1//RooftilesSlate0054_3_S.jpg':
-        case '/basic_map/models/map1//BricksSmallOld0080_5_S.jpg':
-        case '/basic_map/models/map1//RooftilesMetal0049_15_S.jpg':
-        case '/basic_map/models/map1//FloorsRegular0181_1_S.jpg':
-        case '/basic_map/models/map1//WoodRough0089_19_S.jpg':
-        case '/basic_map/models/map1//ConcreteFence0028_1_S.jpg':
+        case '/basic_map/models/map1/Hedges0029_1_S.jpg':
+        case '/basic_map/models/map1/TilesPlain0041_2_S.jpg':
+        case '/basic_map/models/map1/CardboardPlain0008_1_S.jpg':
+        case '/basic_map/models/map1/WoodPlanksPainted0076_25_S.jpg':
+        case '/basic_map/models/map1/RooftilesSlate0088_5_S.jpg':
+        case '/basic_map/models/map1/MetalFloorsPainted0044_36_S.jpg':
+        case '/basic_map/models/map1/RooftilesMetal0018_15_S.jpg':
+        case '/basic_map/models/map1/ConcreteFence0028_1_S.jpg':
+        case '/basic_map/models/map1/RooftilesSlate0054_3_S.jpg':
+        case '/basic_map/models/map1/BricksSmallOld0080_5_S.jpg':
+        case '/basic_map/models/map1/RooftilesMetal0049_15_S.jpg':
+        case '/basic_map/models/map1/FloorsRegular0181_1_S.jpg':
+        case '/basic_map/models/map1/WoodRough0089_19_S.jpg':
+        case '/basic_map/models/map1/ConcreteFence0028_1_S.jpg':
         case '/':
             if (path == '/') path = '/client.html';
             fs.readFile(__dirname + path, function(err, data) {
