@@ -16,7 +16,7 @@
 	<body>
 
  <script src="basic_map/js/three.min.js"></script>
-  <script src="basic_map/js/OrbitControls.js"></script>
+  <script src="basic_map/js/TrackballControls.js"></script>
   <script src="basic_map/js/Detector.js"></script>
 
   <script type="x-shader/x-vertex" id="vertexShader">
@@ -48,6 +48,8 @@
 
     // Set up the scene, camera, and renderer as global variables.
     var scene, camera, renderer;
+    var cameraControls;
+    var clock = new THREE.Clock();
 
     init();
     animate();
@@ -58,13 +60,13 @@
       // Create the scene and set the scene size.
       scene = new THREE.Scene();
       //fog
-      scene.fog = new THREE.Fog( 0xffffff, 1000, 10000 );
+      scene.fog = new THREE.Fog( 0xffffff, 50, 500);
       var WIDTH = window.innerWidth,
           HEIGHT = window.innerHeight;
 
       // Create a camera, zoom it out from the model a bit, and add it to the scene.
       camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 20000);
-      camera.position.set(50,50,50);
+      camera.position.set(0,20,50);
       scene.add(camera);
 
       // Create an event listener that resizes the renderer with the browser window.
@@ -153,7 +155,9 @@
       addCharacters(); 
 
       // Add OrbitControls so that we can pan around with the mouse.
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // CONTROLS
+      cameraControls = new THREE.TrackballControls( camera, renderer.domElement );
 
     }
 
@@ -191,14 +195,22 @@
         slayer.position.z = 8;
         scene.add(slayer);
 
-        camera.position.z = 5;
-
         var render = function () {
+          if (clientid%2 === 0) {
+            camera.lookAt(zombie.position);
+            zombie.add(camera);
+          }else{
+            camera.lookAt(slayer.position);
+            slayer.add(camera);
+          }
+
+          var delta = clock.getDelta();
+          cameraControls.update( delta );
+
           requestAnimationFrame(render);
           renderer.render(scene, camera);
 
           movement();
-
         }
 
         render();
@@ -388,7 +400,7 @@
       requestAnimationFrame(animate);
       
       // Render the scene.
-      renderer.render(scene, camera);
+      // renderer.render(scene, camera);
       controls.update();
 
     }

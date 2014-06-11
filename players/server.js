@@ -15,7 +15,7 @@ server = http.createServer(function(req, res){
         case '/basic_map/js/Detector.js':
         case '/Cube.js':
         case '/basic_map/js/three.min.js':
-        case '/basic_map/js/OrbitControls.js':
+        case '/basic_map/js/TrackballControls.js':
         case '/basic_map/models/map1/map1.js':
         case '/basic_map/models/map1//Hedges0029_1_S.jpg':
         case '/basic_map/models/map1//TilesPlain0041_2_S.jpg':
