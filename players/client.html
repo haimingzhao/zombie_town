@@ -245,13 +245,17 @@
             console.log('in id with ' + JSON.stringify(obj.id));
             clientid = obj.id; 
             console.log('after assignment ' + JSON.stringify(clientid));
+            addCamera(obj.id);
           }
           if('turn' in obj) {
-            if(obj.turn === 1) {
+            // if(obj.turn === 1) {
               clientid = obj.id;
               // addCharacters();
               // animate();
-            }
+            // }
+          }
+                    if('score' in obj) {
+            console.log('player score is ' + obj.score);
           }
           if('playerDisconnect' in obj) {
             console.log(obj.playerDisconnect + 'disconnected');
@@ -263,16 +267,28 @@
           }
         });
 
+        function addCamera(id) {
+            if (id%2 === 0) {
+            console.log('zombie camera ' + JSON.stringify(id));
+            camera.lookAt(zombie.position);
+            zombie.add(camera);
+          }else{
+            console.log('slayer camera' + JSON.stringify(id));
+            camera.lookAt(slayer.position);
+            slayer.add(camera);
+          }
+        }
+
         function movement() {
 
-          timerTicks++; 
+          // timerTicks++; 
 
-          if (timerTicks === 10) {
-            humans.forEach(function(human) {
-              human.position.x += 1; 
-            });
-            timerTicks = 0; 
-          }
+          // if (timerTicks === 10) {
+          //   humans.forEach(function(human) {
+          //     human.position.x += 1; 
+          //   });
+          //   timerTicks = 0; 
+          // }
 
           if (clientid%2 === 0) {   
                 if(Key.isDown(Key.A)) {
@@ -280,21 +296,20 @@
                   if(!inSolidRange(keyPressed)){
                     console.log('client id = 0'); 
                     zombie.position.x -= 1;
-                    socket.send({'zombie': [zombie.position]});
                     console.log(zombie.position);
                   } else {
                     if(!humanHit) {
                       socket.send({'zombieWin': [clientid]});
                     } else {
-                  humanHit = false;
-                }
+                    humanHit = false;
+                    }
                   }
+                  socket.send({'zombie': [zombie.position]});
                 }
                 if(Key.isDown(Key.W)) {
                    keyPressed = 'W';
                   if(!inSolidRange(keyPressed)){
                     zombie.position.z += 1;
-                    socket.send({'zombie': [zombie.position]});
                   } else {
                     if(!humanHit) {
                       socket.send({'zombieWin': [clientid]});
@@ -302,12 +317,12 @@
                   humanHit = false;
                 }
                   }
+                  socket.send({'zombie': [zombie.position]});
                 }
                 if(Key.isDown(Key.S)) {
                   keyPressed = 'S';
                   if(!inSolidRange(keyPressed)){
                     zombie.position.z -= 1;
-                    socket.send({'zombie': [zombie.position]});
                   } else {
                     if(!humanHit) {
                       socket.send({'zombieWin': [clientid]});
@@ -315,12 +330,12 @@
                   humanHit = false;
                 }
                   }
+                  socket.send({'zombie': [zombie.position]});
                 }
                 if(Key.isDown(Key.D)) {
                   keyPressed = 'D';
                   if(!inSolidRange(keyPressed)) {
                     zombie.position.x += 1;
-                    socket.send({'zombie': [zombie.position]});
                   } else {
                     if(!humanHit) {
                       socket.send({'zombieWin': [clientid]});
@@ -328,6 +343,7 @@
                   humanHit = false;
                 }
                   }
+                  socket.send({'zombie': [zombie.position]});
                 }
 
           } else if(clientid%2 === 1) {       
@@ -336,8 +352,6 @@
                   if(!inSolidRange(keyPressed)){
                     console.log('client id = 1');
                     slayer.position.x -= 1;
-
-                    socket.send({'slayer': [slayer.position]});
                     console.log(slayer.position);
                   } else {
                     if(!humanHit) {
@@ -346,12 +360,12 @@
                   humanHit = false;
                 }
                   }
+                  socket.send({'slayer': [slayer.position]});
               }
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
               if(!inSolidRange(keyPressed)){
                 slayer.position.z += 1;
-                socket.send({'slayer': [slayer.position]});
               } else {
                 if(!humanHit) {
                   socket.send({'slayerWin': [clientid]});
@@ -359,12 +373,12 @@
                   humanHit = false;
                 }
               }
+              socket.send({'slayer': [slayer.position]});
             }
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
                 slayer.position.z -= 1;
-                socket.send({'slayer': [slayer.position]});
               } else {
                 if(!humanHit) {
                   socket.send({'slayerWin': [clientid]});
@@ -372,13 +386,13 @@
                   humanHit = false;
                 }
               }
+              socket.send({'slayer': [slayer.position]});
             }
             if(Key.isDown(Key.D)) {
               keyPressed = 'D';
               if(!inSolidRange(keyPressed)){
                 slayer.position.x += 1;
                 // camera.position.x += 0.1;
-                socket.send({'slayer': [slayer.position]});
               } else {
                 if(!humanHit) {
                   socket.send({'slayerWin': [clientid]});
@@ -386,6 +400,7 @@
                   humanHit = false;
                 }
               }
+              socket.send({'slayer': [slayer.position]});
             }
           }
         };
@@ -423,6 +438,8 @@
               (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5)) {
               console.log("Violating in X domain.\n");
               humanHit = true;
+              humans[i].material.color.setHex(0x458B00);
+              socket.send({'humanHit': i, 'colour': 0x458B00});;
               return true;
 
             } else if (((dir === 'W') || (dir === 'S')) && 
@@ -430,6 +447,8 @@
               (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5)) {
               console.log("Violating in Y domain.\n");
               humanHit = true;
+              humans[i].material.color.setHex(0x458B00);
+              socket.send({'humanHit': i, 'colour': 0x458B00});;
               return true; 
              }// else {
             //   console.log("Not violating.\n"); 

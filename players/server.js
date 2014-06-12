@@ -5,7 +5,8 @@ var http = require('http'),
     THREE = require('three');
 
 var server,
-    players = [];
+    players = [],
+    humans = ['h1'];
 
 server = http.createServer(function(req, res){
     var path = url.parse(req.url).pathname;
@@ -67,22 +68,64 @@ socket.on('connection', function(client){
     client.send({id: client.id});
     console.log({id: client.id});
 
+    client.score = 0;
+    client.send({score: client.score});
+
     client.room = 'room' + (Math.floor(client.id/2)).toString();
     client.send({room: client.room});
 
+    client.send({'humans': humans});
+
+    // var otherid = flip(client.id);
+
     client.on('message',function(message) {
-        if('zombie' in message && players[client.id+1] !== null) {
+        var otherid = flip(client.id);
+        console.log(JSON.stringify(players[client.id].id) + ' in message');
+        if('zombie' in message && players[otherid] !== null) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
-            players[client.id+1].send({'newPosition': message});
+
+            players[otherid].send({'newPosition': message});
         } else if('slayer' in message){
+            console.log(JSON.stringify(players[client.id].id) + 'in message');
+
+            // if(client.id%2 === 1) {
             console.log('slayer in room ' + client.room + JSON.stringify(message));
-            players[client.id-1].send({'newPosition': message});
+            players[otherid].send({'newPosition': message});
+            // } else if(client.id%) {
+            //     console.log('slayer in room ' + client.room + JSON.stringify(message));
+            //     players[otherid].send({'newPosition': message});
+            // }
         }
-        if('zombieWin' in message) {
+                if('zombieWin' in message) {
             console.log('zombieWin!!!');
+            players[client.id].id = flip(client.id);
+            players[players[client.id].id].id = flip(players[players[client.id].id].id);
+            client.turn = 1;
+            client.send({turn: client.turn, id: players[client.id].id});
+            players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
         }
         if('slayerWin' in message) {
             console.log('slayerWin!!');
+            players[client.id].id = flip(client.id);
+            players[players[client.id].id].id = flip(players[players[client.id].id].id);
+            client.turn = 1;
+            client.send({turn: client.turn, id: players[client.id].id});
+            players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
+            // client.id = flip(client.id); 
+            // console.log('after flip id:' + client.id);
+            // players[client.id].id = flip(players[client.id].id);
+            // client.turn = 1;
+            // client.send({turn: client.turn, id: client.id});
+            // players[client.id].send({turn: 1, id: players[client.id].id});
+        }
+                if('score' in message) {
+            client.score += message.score;
+            console.log('client ' + client.id + 'score is ' + client.score);
+        }
+        if('humanHit' in message) {
+            console.log(humans[message.humanHit] + 'hit');
+            players[client.id+1].send({'humanTurned': message});
+            // client.send()
         }
     });
 
@@ -97,3 +140,10 @@ socket.on('connection', function(client){
         }
     });
 });
+function flip(oldid) {
+    if (oldid%2 === 0) { // change to fit new id numbering scheme
+        return oldid+1; 
+    } else {
+        return oldid-1; 
+    }
+}
