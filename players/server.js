@@ -6,7 +6,15 @@ var http = require('http'),
 
 var server,
     players = [],
-    humans = ['h1'], 
+    humans = ['h1'],
+    spawnPositions = [[-176, 224], 
+                      [-176, 108], 
+                      [146, 170],  
+                      [164, 180], 
+                      [74, 172], 
+                      [-42, 126], 
+                      [-136, -32], 
+                      [106, -32]] ,
     switchingInProgress = false;
 
 server = http.createServer(function(req, res){
@@ -104,20 +112,24 @@ socket.on('connection', function(client){
         }
         
         if('zombieWin' in message) {
-            console.log('switch!!!');
+            console.log('zombieWin!!!');
 
             players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
             players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z';
-            client.send({type: players[client.id].type, 'respawn': client.type});
-            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': client.type}); 
+            var posOne = respawn();
+            var posTwo = respawn();
+            client.send({type: players[client.id].type, 'respawn': posOne, 'slayerRespawn': posTwo});
+            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
         }
         if('slayerWin' in message) {
             console.log('slayerWin!!');
 
             players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
             players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z'; 
-            client.send({type: players[client.id].type, 'respawn': client.type});
-            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': client.type}); 
+            var posOne = respawn();
+            var posTwo = respawn();
+            client.send({type: players[client.id].type, 'zombieRespawn': posOne, 'slayerRespawn': posTwo});
+            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
         }
         
         if('score' in message) {
@@ -140,4 +152,11 @@ socket.on('connection', function(client){
             players[client.id-1].send({'playerDisconnect': client.id});
         }
     });
+
+    function respawn() {
+        var respawnPos = spawnPositions[Math.floor((Math.random()*8+1))-1];
+        var newX = respawnPos[0]; 
+        var newZ = respawnPos[1]; 
+        return [newX, newZ];
+    }
 });

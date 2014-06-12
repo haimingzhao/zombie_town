@@ -248,11 +248,11 @@
             addCamera(obj.type); 
             if('respawn' in obj) {
               console.log('switching');
-                zombie.position.x = 15;
-                zombie.position.z = 15;
+                zombie.position.x = obj.respawn[0];
+                zombie.position.z = obj.respawn[1];
                 socket.send({'zombie': [zombie.position]});
-                slayer.position.x = 25;
-                slayer.position.z = 25;
+                slayer.position.x = obj.slayerRespawn[0];
+                slayer.position.z = obj.slayerRespawn[1];
                 socket.send({'slayer': [slayer.position]});
             }
           }
@@ -374,7 +374,7 @@
                 keyPressed = 'A';
                   if(!inSolidRange(keyPressed)){
                     console.log('client id = 1');
-                    slayer.position.x -= 1;
+                    slayer.position.x -= 2;
                     console.log(slayer.position);
                   } else {
                     if(opponentHit) {
@@ -388,7 +388,7 @@
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
               if(!inSolidRange(keyPressed)){
-                slayer.position.z += 1;
+                slayer.position.z += 2;
               } else {
                 if(opponentHit) {
                   switchingInProgress = true; 
@@ -401,7 +401,7 @@
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                slayer.position.z -= 1;
+                slayer.position.z -= 2;
               } else {
                 if(opponentHit) {
                   switchingInProgress = true;  
@@ -414,7 +414,7 @@
             if(Key.isDown(Key.D)) {
               keyPressed = 'D';
               if(!inSolidRange(keyPressed)){
-                slayer.position.x += 1;
+                slayer.position.x += 2;
               } else {
                 if(opponentHit) {
                   switchingInProgress = true; 
