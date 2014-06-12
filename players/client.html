@@ -166,6 +166,7 @@
         var zombie,
           slayer,
           clientid,
+          clienttype, 
           room,
           keyPressed,
           humans = [],
@@ -188,14 +189,6 @@
           slayer.position.z = 8;
           slayer.position.y = 2.5;
           scene.add(slayer);
-
-          if (clientid%2 === 0) {
-            camera.lookAt(zombie.position);
-            zombie.add(camera);
-          }else{
-            camera.lookAt(slayer.position);
-            slayer.add(camera);
-          }
 
           socket.on('message', function(obj) {
             if('humans' in obj) {
@@ -241,19 +234,25 @@
               slayer.position.z = obj.newPosition.slayer[0].z;
             }
           }
-          if('id' in obj) {
-            console.log('in id with ' + JSON.stringify(obj.id));
-            clientid = obj.id; 
-            console.log('after assignment ' + JSON.stringify(clientid));
-            addCamera(obj.id);
+          // if('id' in obj) {
+          //   console.log('in id with ' + JSON.stringify(obj.id));
+          //   clientid = obj.id; 
+          //   console.log('after assignment ' + JSON.stringify(clientid));
+          //   addCamera(obj.id);
+          // }
+          if('type' in obj) {
+            clienttype = obj.type;
+            addCamera(obj.type); 
           }
-          if('turn' in obj) {
+
+          // if('turn' in obj) {
             // if(obj.turn === 1) {
-              clientid = obj.id;
+              // clientid = obj.id;
+
               // addCharacters();
               // animate();
             // }
-          }
+          // }
                     if('score' in obj) {
             console.log('player score is ' + obj.score);
           }
@@ -267,13 +266,13 @@
           }
         });
 
-        function addCamera(id) {
-            if (id%2 === 0) {
-            console.log('zombie camera ' + JSON.stringify(id));
+        function addCamera(type) {
+            if (type === 'z') {
+            // console.log('zombie camera ' + JSON.stringify(id));
             camera.lookAt(zombie.position);
             zombie.add(camera);
           }else{
-            console.log('slayer camera' + JSON.stringify(id));
+            // console.log('slayer camera' + JSON.stringify(id));
             camera.lookAt(slayer.position);
             slayer.add(camera);
           }
@@ -290,7 +289,7 @@
           //   timerTicks = 0; 
           // }
 
-          if (clientid%2 === 0) {   
+          if (clienttype === 'z') {   
                 if(Key.isDown(Key.A)) {
                   keyPressed = 'A';
                   if(!inSolidRange(keyPressed)){
@@ -299,7 +298,7 @@
                     console.log(zombie.position);
                   } else {
                     if(!humanHit) {
-                      socket.send({'zombieWin': [clientid]});
+                      socket.send({'zombieWin': [clienttype]});
                     } else {
                     humanHit = false;
                     }
@@ -312,7 +311,7 @@
                     zombie.position.z += 1;
                   } else {
                     if(!humanHit) {
-                      socket.send({'zombieWin': [clientid]});
+                      socket.send({'zombieWin': [clienttype]});
                     } else {
                   humanHit = false;
                 }
@@ -325,7 +324,7 @@
                     zombie.position.z -= 1;
                   } else {
                     if(!humanHit) {
-                      socket.send({'zombieWin': [clientid]});
+                      socket.send({'zombieWin': [clienttype]});
                     } else {
                   humanHit = false;
                 }
@@ -338,7 +337,7 @@
                     zombie.position.x += 1;
                   } else {
                     if(!humanHit) {
-                      socket.send({'zombieWin': [clientid]});
+                      socket.send({'zombieWin': [clienttype]});
                     } else {
                   humanHit = false;
                 }
@@ -346,7 +345,7 @@
                   socket.send({'zombie': [zombie.position]});
                 }
 
-          } else if(clientid%2 === 1) {       
+          } else if(clienttype === 's') {       
               if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
                   if(!inSolidRange(keyPressed)){
@@ -355,7 +354,7 @@
                     console.log(slayer.position);
                   } else {
                     if(!humanHit) {
-                      socket.send({'slayerWin': [clientid]});
+                      socket.send({'slayerWin': [clienttype]});
                     } else {
                   humanHit = false;
                 }
@@ -368,7 +367,7 @@
                 slayer.position.z += 1;
               } else {
                 if(!humanHit) {
-                  socket.send({'slayerWin': [clientid]});
+                  socket.send({'slayerWin': [clienttype]});
                 } else {
                   humanHit = false;
                 }
@@ -381,7 +380,7 @@
                 slayer.position.z -= 1;
               } else {
                 if(!humanHit) {
-                  socket.send({'slayerWin': [clientid]});
+                  socket.send({'slayerWin': [clienttype]});
                 } else {
                   humanHit = false;
                 }
@@ -395,7 +394,7 @@
                 // camera.position.x += 0.1;
               } else {
                 if(!humanHit) {
-                  socket.send({'slayerWin': [clientid]});
+                  socket.send({'slayerWin': [clienttype]});
                 } else {
                   humanHit = false;
                 }
@@ -412,14 +411,14 @@
             zombiePosX = zombie.position.x,
             zombiePosY = zombie.position.z;
 
-          if(clientid%2 === 0) {
+          if(clienttype === 'z') {
             switch(keyPressed) {
               case 'W' : return inViolation(zombiePosX, zombiePosY + 1, slayer.position, 'W');
               case 'S' : return inViolation(zombiePosX,  zombiePosY - 1, slayer.position, 'S');
               case 'A' : return inViolation(zombiePosX - 1,  zombiePosY, slayer.position, 'A');
               case 'D' : return inViolation(zombiePosX + 1,  zombiePosY, slayer.position, 'D');
             }
-          } else if(clientid%2 === 1) {
+          } else if(clienttype === 's') {
             switch(keyPressed) {
               case 'W' : return inViolation(slayerPosX, slayerPosY + 1, zombie.position, 'W');
               case 'S' : return inViolation(slayerPosX,  slayerPosY - 1, zombie.position, 'S');

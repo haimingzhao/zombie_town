@@ -61,12 +61,23 @@ server.listen(3000);
 var socket = io.listen(server); 
 socket.on('connection', function(client){
 
-    client.id = players.length;
     players.push(client);
-    console.log('client id ' + client.id);
 
-    client.send({id: client.id});
-    console.log({id: client.id});
+    if(players.length%2 === 0) {
+        players[players.length-1].type = 's'; 
+    } else {
+        players[players.length-1].type = 'z'; 
+    }
+
+    players[players.length-1].id = players.length-1; 
+    console.log(JSON.stringify(players[players.length-1].type));
+
+    // client.id = players.length;
+    // players.push(client);
+    // console.log('client id ' + client.id);
+
+    client.send({'type': client.type});
+    console.log({'type': client.type});
 
     client.score = 0;
     client.send({score: client.score});
@@ -79,38 +90,53 @@ socket.on('connection', function(client){
     // var otherid = flip(client.id);
 
     client.on('message',function(message) {
-        var otherid = flip(client.id);
-        console.log(JSON.stringify(players[client.id].id) + ' in message');
-        if('zombie' in message && players[otherid] !== null) {
+        var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
+        console.log(JSON.stringify(otherplayerid)); 
+
+        // console.log(JSON.stringify(players[client.id].id) + ' in message');
+        if('zombie' in message /*&& players[otherid] !== null*/) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
 
-            players[otherid].send({'newPosition': message});
+            players[otherplayerid].send({'newPosition': message});
         } else if('slayer' in message){
-            console.log(JSON.stringify(players[client.id].id) + 'in message');
+            // console.log(JSON.stringify(players[client.id].id) + 'in message');
 
             // if(client.id%2 === 1) {
             console.log('slayer in room ' + client.room + JSON.stringify(message));
-            players[otherid].send({'newPosition': message});
+            players[otherplayerid].send({'newPosition': message});
             // } else if(client.id%) {
             //     console.log('slayer in room ' + client.room + JSON.stringify(message));
             //     players[otherid].send({'newPosition': message});
             // }
         }
-                if('zombieWin' in message) {
+        
+        if('zombieWin' in message) {
             console.log('zombieWin!!!');
-            players[client.id].id = flip(client.id);
-            players[players[client.id].id].id = flip(players[players[client.id].id].id);
-            client.turn = 1;
-            client.send({turn: client.turn, id: players[client.id].id});
-            players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
+
+            players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
+            players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z'; 
+            client.send({type: players[client.id].type});
+            players[otherplayerid].send({type: players[otherplayerid].type}); 
+
+            // players[client.id].id = flip(client.id);
+            // players[players[client.id].id].id = flip(players[players[client.id].id].id);
+            // client.turn = 1;
+            // client.send({turn: client.turn, id: players[client.id].id});
+            // players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
         }
         if('slayerWin' in message) {
             console.log('slayerWin!!');
-            players[client.id].id = flip(client.id);
-            players[players[client.id].id].id = flip(players[players[client.id].id].id);
-            client.turn = 1;
-            client.send({turn: client.turn, id: players[client.id].id});
-            players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
+
+            players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
+            players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z'; 
+            client.send({type: players[client.id].type});
+            players[otherplayerid].send({type: players[otherplayerid].type}); 
+
+            // players[client.id].id = flip(client.id);
+            // players[players[client.id].id].id = flip(players[players[client.id].id].id);
+            // client.turn = 1;
+            // client.send({turn: client.turn, id: players[client.id].id});
+            // players[players[client.id].id].send({turn: 1, id: players[players[client.id].id].id});
             // client.id = flip(client.id); 
             // console.log('after flip id:' + client.id);
             // players[client.id].id = flip(players[client.id].id);
@@ -118,13 +144,14 @@ socket.on('connection', function(client){
             // client.send({turn: client.turn, id: client.id});
             // players[client.id].send({turn: 1, id: players[client.id].id});
         }
-                if('score' in message) {
+        
+        if('score' in message) {
             client.score += message.score;
             console.log('client ' + client.id + 'score is ' + client.score);
         }
         if('humanHit' in message) {
             console.log(humans[message.humanHit] + 'hit');
-            players[client.id+1].send({'humanTurned': message});
+            players[otherplayerid].send({'humanTurned': message});
             // client.send()
         }
     });
