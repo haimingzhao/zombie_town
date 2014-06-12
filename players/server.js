@@ -133,8 +133,9 @@ socket.on('connection', function(client){
         }
         
         if('score' in message) {
-            client.score += message.score;
+            client.score = message.score;
             console.log('client ' + client.id + 'score is ' + client.score);
+            players[otherplayerid].send({'otherScore': message.score}); 
         }
         if('humanHit' in message) {
             console.log(humans[message.humanHit] + 'hit');

@@ -157,6 +157,8 @@
         var delta = clock.getDelta();
         cameraControls.update( delta );
 
+        setInterval(timer, 1000);
+
       }
 
   /*
@@ -174,7 +176,9 @@
           timerTicks = 0,
           opponentHit = false,
           wallHit = false, 
-          switchingInProgress = false; 
+          switchingInProgress = false,
+          count = 120,
+          score = 0; 
 
         // var socket = io.connect();
 
@@ -256,8 +260,8 @@
                 socket.send({'slayer': [slayer.position]});
             }
           }
-          if('score' in obj) {
-            console.log('player score is ' + obj.score);
+          if('otherScore' in obj) {
+            console.log('other player score is ' + JSON.stringify(obj.otherScore));
           }
           if('humanTurned' in obj) {
             humans[obj.humanTurned].material.color.setHex(0x4B088A);
@@ -314,7 +318,8 @@
                       console.log('switchingInProgress set'); 
                       socket.send({'zombieWin': [clienttype]});
                     } else if(!wallHit) {
-                      socket.send({'score': 1});
+                      score += 1;
+                      socket.send({'score': score});
                     humanHit = false;
                     }
                   }
@@ -330,6 +335,7 @@
                       console.log('switchingInProgress set'); 
                       socket.send({'zombieWin': [clienttype]});
                     } else if(!wallHit){
+                      score += 1;
                       socket.send({'score': 1});
                   humanHit = false;
                 }
@@ -346,6 +352,7 @@
                       console.log('switchingInProgress set'); 
                       socket.send({'zombieWin': [clienttype]});
                     } else if(!wallHit) {
+                      score += 1;
                       socket.send({'score': 1});
                   humanHit = false;
                 }
@@ -362,6 +369,7 @@
                       console.log('switchingInProgress set'); 
                       socket.send({'zombieWin': [clienttype]});
                     } else if(!wallHit) {
+                      score += 1;
                       socket.send({'score': 1});
                       humanHit = false;
                 }
@@ -515,6 +523,16 @@
           }
         }
 
+        function timer() {
+          count -= 1;
+          if(count <= 0) {
+            clearInterval(count);
+            return;
+          } 
+          //do something here to show timer updating??? ----------------------------------------
+          document.getElementById("timer").innerHTML=count + " secs";
+        }
+
       // Renders the scene and updates the render as needed.
       function animate() {
 
@@ -529,5 +547,7 @@
       }
 
     </script>
+    <span id="timer"></span>
+    <span id="score"></span>
 	</body>
 </html>
