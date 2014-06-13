@@ -1,11 +1,13 @@
-var http = require('http'),
-    url = require('url'),
-    fs = require('fs'),
-    io = require('socket.io'),
-    THREE = require('three');
+var express = require('express');
+var app = express();
+// var http = require('http').Server(app);
+var socket = require('socket.io');
+var url = require('url');
+var http = require('http');
 
-var server,
-    players = [],
+var temp_server;
+
+var players = [],
     humans = ['h1'/*, 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10'*/],
     spawnPositions = [[-176, 224], 
                       [-176, 108], 
@@ -20,90 +22,16 @@ var server,
     colaborative = false,
     single = false;
 
-server = http.createServer(function(req, res){
-    var path = url.parse(req.url).pathname;
-    switch (path) {
-        case '/lib/three.js':
-        case '/lib/keyboard.js':
-        case '/basic_map/js/Detector.js':
-        case '/basic_map/js/three.min.js':
-        case '/basic_map/js/TrackballControls.js':
-        case '/basic_map/models/map1/map1.js':
-        case '/basic_map/models/map1/Hedges0029_1_S.jpg':
-        case '/basic_map/models/map1/TilesPlain0041_2_S.jpg':
-        case '/basic_map/models/map1/CardboardPlain0008_1_S.jpg':
-        case '/basic_map/models/map1/WoodPlanksPainted0076_25_S.jpg':
-        case '/basic_map/models/map1/RooftilesSlate0088_5_S.jpg':
-        case '/basic_map/models/map1/MetalFloorsPainted0044_36_S.jpg':
-        case '/basic_map/models/map1/RooftilesMetal0018_15_S.jpg':
-        case '/basic_map/models/map1/ConcreteFence0028_1_S.jpg':
-        case '/basic_map/models/map1/RooftilesSlate0054_3_S.jpg':
-        case '/basic_map/models/map1/BricksSmallOld0080_5_S.jpg':
-        case '/basic_map/models/map1/RooftilesMetal0049_15_S.jpg':
-        case '/basic_map/models/map1/FloorsRegular0181_1_S.jpg':
-        case '/basic_map/models/map1/WoodRough0089_19_S.jpg':
-        case '/basic_map/models/map1/ConcreteFence0028_1_S.jpg':
-        case '/':
-             if (path == '/') path = '/colaborative.html';
-            fs.readFile(__dirname + path, function(err, data) {
-            if (err) return send404(res, "::err:" + path);
-            // res.writeHead(200, {'Content-Type': 'text/html'})
-
-            res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-            res.write(data, 'utf8');
-            res.end();
-            });
-            colaborative = true;
-        break;
-        // case '/competitive.html':
-        //     fs.readFile(__dirname + path, function(err, data) {
-        //     if (err) return send404(res, "::err:" + path);
-        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-        //     res.write(data, 'utf8');
-        //     res.end();
-        //     console.log('competitive set');
-        //     });
-        //     competitive = true;
-        //     break;
-        // case '/colaborative.html':
-        //     fs.readFile(__dirname + path, function(err, data) {
-        //     if (err) return send404(res, "::err:" + path);
-        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-        //     res.write(data, 'utf8');
-        //     res.end();
-        //     });
-        //     console.log('collaborative set');
-        //     colaborative = true;
-        //     break;
-        // case '/single.html':
-        //     fs.readFile(__dirname + path, function(err, data) {
-        //     if (err) return send404(res, "::err:" + path);
-        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-        //     res.write(data, 'utf8');
-        //     res.end();
-        //     single = true;
-        //     });
-        //     break;
-        default:
-        send404(res, "not found: " + path);
-    break;
-    }
+app.configure(function() {
+    app.use(express.static(__dirname + '/'));
 });
 
-send404 = function(res, msg){
-    console.log("404:: " + msg);
-    res.writeHead(404);
-    res.write('404:: ' + msg);
-    res.end();
-};
+var server = app.listen(3000);
+var io = socket.listen(server);
 
-server.listen(3000);
-
-var socket = io.listen(server); 
-socket.on('connection', function(client){
+    io.sockets.on('connection', function(client) {
 
     //competitive mode
-    if(competitive) {
 
     console.log('competitive');
 
@@ -178,35 +106,34 @@ socket.on('connection', function(client){
             players[otherplayerid].send({'humanTurned': message.humanHit});
         }
     });
-    } 
 
-    if(colaborative) {
+    // if(colaborative) {
     console.log('colaborative');
 
-    players.push(client);
+    // players.push(client);
 
-    if(players.length%2 === 0) {
-        players[players.length-1].type = 'z1'; 
-    } else {
-        players[players.length-1].type = 'z2'; 
-    }
+    // if(players.length%2 === 0) {
+    //     players[players.length-1].type = 'z1'; 
+    // } else {
+    //     players[players.length-1].type = 'z2'; 
+    // }
 
-    players[players.length-1].id = players.length-1; 
-    console.log(JSON.stringify(players[players.length-1].type));
+    // players[players.length-1].id = players.length-1; 
+    // console.log(JSON.stringify(players[players.length-1].type));
 
-    client.send({'type': client.type});
-    console.log({'type': client.type});
+    // client.send({'type': client.type});
+    // console.log({'type': client.type});
 
-    client.score = 0;
-    client.send({score: client.score});
+    // client.score = 0;
+    // client.send({score: client.score});
 
-    client.gameType = competitive;
+    // client.gameType = competitive;
 
-    client.room = 'room' + (Math.floor(client.id/2)).toString();
-    client.send({room: client.room});
+    // client.room = 'room' + (Math.floor(client.id/2)).toString();
+    // client.send({room: client.room});
 
-    console.log('colaborative humans');
-    client.send({'humans': humans});
+    // console.log('colaborative humans');
+    // client.send({'humans': humans});
 
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
@@ -224,7 +151,7 @@ socket.on('connection', function(client){
             players[otherplayerid].send({'newPosition': message});
         }
         
-        if('zombieWin' in message) {
+        if('zombieWinCol' in message) {
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
             //LOOSE - send message to remove from map 
@@ -247,7 +174,7 @@ socket.on('connection', function(client){
         }
     });
 
-    }
+    // }
     if(single) {
 
     }
