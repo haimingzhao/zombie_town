@@ -6,7 +6,7 @@ var http = require('http'),
 
 var server,
     players = [],
-    humans = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10'],
+    humans = ['h1'/*, 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10'*/],
     spawnPositions = [[-176, 224], 
                       [-176, 108], 
                       [146, 170],  
@@ -26,7 +26,6 @@ server = http.createServer(function(req, res){
         case '/lib/three.js':
         case '/lib/keyboard.js':
         case '/basic_map/js/Detector.js':
-        case '/Cube.js':
         case '/basic_map/js/three.min.js':
         case '/basic_map/js/TrackballControls.js':
         case '/basic_map/models/map1/map1.js':
@@ -44,33 +43,47 @@ server = http.createServer(function(req, res){
         case '/basic_map/models/map1/FloorsRegular0181_1_S.jpg':
         case '/basic_map/models/map1/WoodRough0089_19_S.jpg':
         case '/basic_map/models/map1/ConcreteFence0028_1_S.jpg':
-        case '/competitive.html':
+        case '/':
+             if (path == '/') path = '/colaborative.html';
             fs.readFile(__dirname + path, function(err, data) {
             if (err) return send404(res, "::err:" + path);
-            res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-            res.write(data, 'utf8');
-            res.end();
-            });
-            competitive = true;
-            break;
-        case '/colaborative.html':
-            fs.readFile(__dirname + path, function(err, data) {
-            if (err) return send404(res, "::err:" + path);
+            // res.writeHead(200, {'Content-Type': 'text/html'})
+
             res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
             res.write(data, 'utf8');
             res.end();
             });
             colaborative = true;
-            break;
-        case '/single.html':
-            fs.readFile(__dirname + path, function(err, data) {
-            if (err) return send404(res, "::err:" + path);
-            res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
-            res.write(data, 'utf8');
-            res.end();
-            });
-            single = true;
-            break;
+        break;
+        // case '/competitive.html':
+        //     fs.readFile(__dirname + path, function(err, data) {
+        //     if (err) return send404(res, "::err:" + path);
+        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
+        //     res.write(data, 'utf8');
+        //     res.end();
+        //     console.log('competitive set');
+        //     });
+        //     competitive = true;
+        //     break;
+        // case '/colaborative.html':
+        //     fs.readFile(__dirname + path, function(err, data) {
+        //     if (err) return send404(res, "::err:" + path);
+        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
+        //     res.write(data, 'utf8');
+        //     res.end();
+        //     });
+        //     console.log('collaborative set');
+        //     colaborative = true;
+        //     break;
+        // case '/single.html':
+        //     fs.readFile(__dirname + path, function(err, data) {
+        //     if (err) return send404(res, "::err:" + path);
+        //     res.writeHead(200, {'Content-Type': path == 'json.js' ? 'text/javascript' : 'text/html'});
+        //     res.write(data, 'utf8');
+        //     res.end();
+        //     single = true;
+        //     });
+        //     break;
         default:
         send404(res, "not found: " + path);
     break;
@@ -89,6 +102,7 @@ server.listen(3000);
 var socket = io.listen(server); 
 socket.on('connection', function(client){
 
+    //competitive mode
     if(competitive) {
 
     console.log('competitive');
@@ -107,12 +121,15 @@ socket.on('connection', function(client){
     client.send({'type': client.type});
     console.log({'type': client.type});
 
+    client.gameType = competitive;
+
     client.score = 0;
     client.send({score: client.score});
 
     client.room = 'room' + (Math.floor(client.id/2)).toString();
     client.send({room: client.room});
 
+    console.log('competitive humans');
     client.send({'humans': humans});
 
     client.on('message',function(message) {
@@ -135,6 +152,7 @@ socket.on('connection', function(client){
             players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z';
             var posOne = respawn();
             var posTwo = respawn();
+            console.log('zombie is at' + posOne + 'slayer is at ' + posTwo);
             client.send({type: players[client.id].type, 'respawn': posOne, 'slayerRespawn': posTwo});
             players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
         }
@@ -145,6 +163,7 @@ socket.on('connection', function(client){
             players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z'; 
             var posOne = respawn();
             var posTwo = respawn();
+            console.log('zombie is at' + posOne + 'slayer is at ' + posTwo);
             client.send({type: players[client.id].type, 'zombieRespawn': posOne, 'slayerRespawn': posTwo});
             players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
         }
@@ -181,15 +200,19 @@ socket.on('connection', function(client){
     client.score = 0;
     client.send({score: client.score});
 
+    client.gameType = competitive;
+
     client.room = 'room' + (Math.floor(client.id/2)).toString();
     client.send({room: client.room});
 
+    console.log('colaborative humans');
     client.send({'humans': humans});
 
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
         console.log(JSON.stringify(otherplayerid)); 
 
+        //Send movements to other player
         if('zombieOne' in message) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
             players[otherplayerid].send({'newPosition': message});
@@ -203,10 +226,12 @@ socket.on('connection', function(client){
         
         if('zombieWin' in message) {
             console.log('zombieWin!!!');
+            players[otherplayerid].send({'remove': client.type}); 
             //LOOSE - send message to remove from map 
         }
         if('slayerWin' in message) {
             console.log('slayerWin!!');
+            players[otherplayerid].send({'remove': client.type}); 
             //LOOSE - send message to remove from map 
         }
         
