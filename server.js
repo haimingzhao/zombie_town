@@ -15,6 +15,7 @@ server = http.createServer(function(req, res){
         case '/game/lib/Detector.js':
         case '/game/lib/three.js':
         case '/game/lib/TrackballControls.js':
+        case '/game/lib/stats.min.js':
 
         case '/game/js/keyboard.js':
         
