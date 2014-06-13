@@ -160,16 +160,16 @@ socket.on('connection', function(client){
         }
     });
     } 
-    
+
     if(colaborative) {
     console.log('colaborative');
 
     players.push(client);
 
     if(players.length%2 === 0) {
-        players[players.length-1].type = 'z'; 
+        players[players.length-1].type = 'z1'; 
     } else {
-        players[players.length-1].type = 'z'; 
+        players[players.length-1].type = 'z2'; 
     }
 
     players[players.length-1].id = players.length-1; 
@@ -203,25 +203,14 @@ socket.on('connection', function(client){
         
         if('zombieWin' in message) {
             console.log('zombieWin!!!');
-
-            players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
-            players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z';
-            var posOne = respawn();
-            var posTwo = respawn();
-            client.send({type: players[client.id].type, 'respawn': posOne, 'slayerRespawn': posTwo});
-            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
+            //LOOSE - send message to remove from map 
         }
         if('slayerWin' in message) {
             console.log('slayerWin!!');
-
-            players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
-            players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z'; 
-            var posOne = respawn();
-            var posTwo = respawn();
-            client.send({type: players[client.id].type, 'zombieRespawn': posOne, 'slayerRespawn': posTwo});
-            players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
+            //LOOSE - send message to remove from map 
         }
         
+        //Send cumulative score to both players
         if('score' in message) {
             client.score = message.score;
             console.log('client ' + client.id + 'score is ' + client.score);

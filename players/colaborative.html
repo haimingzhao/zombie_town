@@ -174,11 +174,10 @@
             room,
             keyPressed,
             humans = [],
-            humanHit = false, 
+            humanHit = false,
+            otherPlayerHit = false, 
             timerTicks = 0,
-            opponentHit = false,
             wallHit = false, 
-            switchingInProgress = false,
             count = 120,
             score = 0; 
 
@@ -248,32 +247,19 @@
             room = obj.room;
           }
           if('newPosition' in obj) {
-
-            if ('zombie' in obj.newPosition) {
-              if(client.id%2 === 0) {
-              zombieTwo.position.x = obj.newPosition.zombie[0].x;
-              zombieTwo.position.z = obj.newPosition.zombie[0].z;
-              switchingInProgress = false; 
-              }
+            //The client is zombieOne - want zombie 2 location
+            if(clientid%2 === 0 && 'zombieTwo' in newPosition) {
+              
             } else {
-              slayer.position.x = obj.newPosition.slayer[0].x;
-              slayer.position.z = obj.newPosition.slayer[0].z;
-              switchingInProgress = false; 
+              //They are zombieTwo
             }
+            //Give both slayer positions
+
           }
           if('type' in obj) {
             console.log(JSON.stringify(obj));
             clienttype = obj.type;
             addCamera(obj.type); 
-            if('respawn' in obj) {
-              console.log('switching');
-                zombie.position.x = obj.respawn[0];
-                zombie.position.z = obj.respawn[1];
-                socket.send({'zombie': [zombie.position]});
-                slayer.position.x = obj.slayerRespawn[0];
-                slayer.position.z = obj.slayerRespawn[1];
-                socket.send({'slayer': [slayer.position]});
-            }
           }
           if('otherScore' in obj) {
             console.log('other player score is ' + JSON.stringify(obj.otherScore));
@@ -293,24 +279,16 @@
         });
 
         function addCamera(type) {
-            if (type === 'z') {
-            // console.log('zombie camera ' + JSON.stringify(id));
+          if (type === 'z1') {
             camera.lookAt(zombie.position);
             zombie.add(camera);
-          }else{
-            // console.log('slayer camera' + JSON.stringify(id));
+          } else {
             camera.lookAt(slayer.position);
             slayer.add(camera);
           }
         }
 
         function movement() {
-
-          if (switchingInProgress) {
-            console.log('switchingInProgress'); 
-            return; 
-          }
-
           // timerTicks++; 
 
           // if (timerTicks === 10) {
@@ -320,218 +298,271 @@
           //   timerTicks = 0; 
           // }
 
-          if (clienttype === 'z') {   
-                if(Key.isDown(Key.A)) {
-                  keyPressed = 'A';
-                  if(!inSolidRange(keyPressed)){
-                    console.log('client id = 0'); 
-                    zombie.position.x -= 2;
-                    console.log(zombie.position);
-                  } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'score': score});
-                    humanHit = false;
-                    }
-                  }
-                  socket.send({'zombie': [zombie.position]});
-                }
-                if(Key.isDown(Key.W)) {
-                   keyPressed = 'W';
-                  if(!inSolidRange(keyPressed)){
-                    zombie.position.z += 2;
-                  } else if(!wallHit) {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
-                    } else if(!wallHit){
-                      score += 1;
-                      socket.send({'score': 1});
-                  humanHit = false;
-                }
-                  }
-                  socket.send({'zombie': [zombie.position]});
-                }
-                if(Key.isDown(Key.S)) {
-                  keyPressed = 'S';
-                  if(!inSolidRange(keyPressed)){
-                    zombie.position.z -= 2;
-                  } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'score': 1});
-                  humanHit = false;
-                }
-                  }
-                  socket.send({'zombie': [zombie.position]});
-                }
-                if(Key.isDown(Key.D)) {
-                  keyPressed = 'D';
-                  if(!inSolidRange(keyPressed)) {
-                    zombie.position.x += 2;
-                  } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'score': 1});
-                      humanHit = false;
-                }
-                  }
-                  socket.send({'zombie': [zombie.position]});
-                }
-
-          } else if(clienttype === 's') {       
-              if(Key.isDown(Key.A)) {
+          if (clienttype === 'z1') {   
+            if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
-                  if(!inSolidRange(keyPressed)){
-                    console.log('client id = 1');
-                    slayer.position.x -= 2;
-                    console.log(slayer.position);
-                  } else {
-                    if(opponentHit) {
-                      switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
-                      socket.send({'slayerWin': [clienttype]});
-                }
+                if(!inSolidRange(keyPressed)){
+                  console.log('client id = 0'); 
+                  zombieOne.position.x -= 2;
+                  console.log(zombie.position);
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit && !otherPlayerHit) {
+                    score += 1;
+                    socket.send({'score': score});
+                    humanHit = false;
                   }
-                  socket.send({'slayer': [slayer.position]});
-              }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+            }
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
-              if(!inSolidRange(keyPressed)){
-                slayer.position.z += 2;
-              } else {
-                if(opponentHit) {
-                  switchingInProgress = true; 
-                  console.log('switchingInProgress set'); 
-                  socket.send({'slayerWin': [clienttype]});
+                if(!inSolidRange(keyPressed)){
+                  zombieOne.position.z += 2;
+                } else if(!wallHit) {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit && !otherPlayerHit){
+                    score += 1;
+                    socket.send({'score': 1});
+                    humanHit = false;
+                  }
                 }
-              }
-              socket.send({'slayer': [slayer.position]});
+                socket.send({'zombie': [zombieOne.position]});
             }
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                slayer.position.z -= 2;
+                zombieOne.position.z -= 2;
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit && !otherPlayerHit) {
+                    score += 1;
+                    socket.send({'score': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+              }
+              if(Key.isDown(Key.D)) {
+                keyPressed = 'D';
+                if(!inSolidRange(keyPressed)) {
+                    zombieOne.position.x += 2;
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit && !otherPlayerHit) {
+                    score += 1;
+                    socket.send({'score': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+              }
+
+          } else if(clienttype === 'z2') {       
+            if(Key.isDown(Key.A)) {
+              keyPressed = 'A';
+                if(!inSolidRange(keyPressed)){
+                  console.log('client id = 1');
+                  zombieTwo.position.x -= 2;
+                  console.log(slayer.position);
+                } else {
+                  if(!humanHit && opponentHit && !otherPlayerHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit) {
+                    score += 1;
+                    socket.send({'score': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+            if(Key.isDown(Key.W)) {
+              keyPressed = 'W';
+              if(!inSolidRange(keyPressed)){
+                zombieTwo.position.z += 2;
               } else {
-                if(opponentHit) {
-                  switchingInProgress = true;  
-                  console.log('switchingInProgress set'); 
-                  socket.send({'slayerWin': [clienttype]});
+                if(!humanHit && opponentHit) {
+                  socket.send({'zombieWin': [clienttype]});
+                } else if(!wallHit && !otherPlayerHit) {
+                  score += 1;
+                  socket.send({'score': 1});
+                  humanHit = false;
                 }
               }
-              socket.send({'slayer': [slayer.position]});
+              socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+            if(Key.isDown(Key.S)) {
+              keyPressed = 'S';
+              if(!inSolidRange(keyPressed)){
+                zombieTwo.position.z -= 2;
+              } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'zombieWin': [clienttype]});
+                  } else if(!wallHit && !otherPlayerHit) {
+                    score += 1;
+                    socket.send({'score': 1});
+                    humanHit = false;
+                  }
+              }
+              socket.send({'zombieTwo': [zombieTwo.position]});
             }
             if(Key.isDown(Key.D)) {
               keyPressed = 'D';
               if(!inSolidRange(keyPressed)){
-                slayer.position.x += 2;
+                zombieTwo.position.x += 2;
               } else {
-                if(opponentHit) {
-                  switchingInProgress = true; 
-                  console.log('switchingInProgress set');  
-                  socket.send({'slayerWin': [clienttype]});
+                if(!humanHit && opponentHit) {
+                  socket.send({'zombieWin': [clienttype]});
+                } else if(!wallHit && !otherPlayerHit) {
+                  score += 1;
+                  socket.send({'score': 1});
+                  humanHit = false;
                 }
               }
-              socket.send({'slayer': [slayer.position]});
+            socket.send({'zombieTwo': [zombieTwo.position]});
             }
           }
         };
 
         function inSolidRange(keyPressed) {
 
-          var slayerPosX = slayer.position.x,
-            slayerPosY = slayer.position.z,
-            zombiePosX = zombie.position.x,
-            zombiePosY = zombie.position.z;
+          var slayerOnePos = slayerOne.position,
+              slayerTwoPos = slayerOne.position,
+              zombieOnePosX = zombieOne.position.x,
+              zombieOnePosZ = zombieOne.position.z,
+              zombieTwoPosX = zombieOne.position.x,
+              zombieTwoPosZ = zombieOne.position.z;
 
-          if(clienttype === 'z') {
+          if(clienttype === 'z1') {
             switch(keyPressed) {
-              case 'W' : return inViolation(zombiePosX, zombiePosY + 2, slayer.position, 'W');
-              case 'S' : return inViolation(zombiePosX,  zombiePosY - 2, slayer.position, 'S');
-              case 'A' : return inViolation(zombiePosX - 2,  zombiePosY, slayer.position, 'A');
-              case 'D' : return inViolation(zombiePosX + 2,  zombiePosY, slayer.position, 'D');
+              case 'W' : return inViolation(zombieOnePosX, zombiePosOneZ + 2,
+                                            zombieTwo.position, 
+                                            slayerOnePos,
+                                            slayerTwoPos, 'W');
+              case 'S' : return inViolation(zombieOnePosX, zombiePosOneZ - 2, 
+                                            zombieTwo.position, 
+                                            slayerOnePos,                                            
+                                            slayerTwoPos, 'S');
+              case 'A' : return inViolation(zombiePosX - 2, zombieOnePosZ,
+                                            zombieTwo.position, 
+                                            slayerOnepos,   
+                                            slayerTwoPos, 'A');
+              case 'D' : return inViolation(zombiePosX + 2, zombieOnePosZ,
+                                            zombieTwo.position, 
+                                            slayerOnePos,   
+                                            slayerTwoPos, 'D');
             }
-          } else if(clienttype === 's') {
+          } else if(clienttype === 'z2') {
             switch(keyPressed) {
-              case 'W' : return inViolation(slayerPosX, slayerPosY + 1, zombie.position, 'W');
-              case 'S' : return inViolation(slayerPosX,  slayerPosY - 1, zombie.position, 'S');
-              case 'A' : return inViolation(slayerPosX - 1,  slayerPosY, zombie.position, 'A');
-              case 'D' : return inViolation(slayerPosX + 1,  slayerPosY, zombie.position, 'D');
+              case 'W' : return inViolation(slayerTwoPosX, slayerTwoPosY + 1, 
+                                            zombieOne.position,
+                                            slayerOnepos,
+                                            slayerTwoPos, 'W');
+              case 'S' : return inViolation(slayerTwoPosX, slayerTwoPosY - 1, 
+                                            zombieOne.position,
+                                            slayerOnepos,
+                                            slayerTwoPos, 'S');
+              case 'A' : return inViolation(slayerTwoPosX - 1, slayerTwoPosY, 
+                                            zombieOne.position,
+                                            slayerOnepos,
+                                            slayerTwoPos, 'A');
+              case 'D' : return inViolation(slayerTwoPosX + 1, slayerTwoPosY, 
+                                            zombieOne.position,
+                                            slayerOnepos,
+                                            slayerTwoPos, 'D');
             }
           }
         };
 
-        function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
+        function inViolation(newPlayerX, newPlayerY, otherPlayer, slayerOne, slayerTwo, dir) {
+          //inviolation of human
           console.log('Number of humans: ' + humans.length);
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
-              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5)) {
+              (newPlayerX < humans[i].position.x + 2) && (newPlayerX > humans[i].position.x - 2) && 
+              (newPlayerY < humans[i].position.z + 2) && (newPlayerY > humans[i].position.z - 2)) {
               console.log("Violating in X domain.\n");
 
-            if (clienttype === 'z') {
               if(!humans[i].turned) {
                 humanHit = true;
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
                 socket.send({'humanHit': i});;
               }
-            }
-            return true; 
-
+              return true; 
+            //inviolation of other player
             } else if (((dir === 'W') || (dir === 'S')) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5) && 
-              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5)) {
+              (newPlayerY < humans[i].position.z + 2) && (newPlayerY > humans[i].position.z - 2) && 
+              (newPlayerX < humans[i].position.x + 2) && (newPlayerX > humans[i].position.x - 2)) {
               console.log("Violating in Y domain.\n");
 
-              
-              if (clienttype === 'z') {
                 if(!humans[i].turned) {
                   humanHit = true;
                   humans[i].material.color.setHex(0x4B088A);
                   humans[i].turned = true;
                   socket.send({'humanHit': i});
                 }
-                
-              }
-              return true; 
-             }
+                return true; 
+            }
+          }
+          //inviolation of other player
+          if (((dir === 'A') || (dir === 'D')) && 
+            (newPlayerX < otherPlayer.x + 2) && (newPlayerX > otherPlayer.x - 2) && 
+            (newPlayerY < otherPlayer.z + 2) && (newPlayerY > otherPlayer.z - 2)) {
+            console.log("Violating in X domain.\n");
+            otherPlayerHit = true;
+            return true;
+
+          } else if (((dir === 'W') || (dir === 'S')) && 
+            (newPlayerY < otherPlayer.z + 2) && (newPlayerY > otherPlayer.z - 2) && 
+            (newPlayerX < otherPlayer.x + 2) && (newPlayerX > otherPlayer.x - 2)) {
+            console.log("Violating in Y domain.\n");
+            otherPlayerHit = true;
+            return true; 
           }
 
+          //involation of slayerOne
           if (((dir === 'A') || (dir === 'D')) && 
-            (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5)) {
+            (newPlayerX < slayerOne.x + 2) && (newPlayerX > slayerOne.x - 2) && 
+            (newPlayerY < slayerOne.z + 2) && (newPlayerY > slayerOne.z - 2)) {
             console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5) && 
-            (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5)) {
+            (newPlayerY < slayerOne.z + 2) && (newPlayerY > slayerOne.z - 2) && 
+            (newPlayerX < slayerOne.x + 2) && (newPlayerX > slayerOne.x - 2)) {
             console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
-          } else if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
-              // if(newPlayerY === 296 || newPlayerY === -296) {
-                wallHit = true;
-                return true;
-              // }
+          } 
+          //involation of slayerTwo
+          if (((dir === 'A') || (dir === 'D')) && 
+            (newPlayerX < slayerOne.x + 2) && (newPlayerX > slayerOne.x - 2) && 
+            (newPlayerY < slayerOne.z + 2) && (newPlayerY > slayerOne.z - 2)) {
+            console.log("Violating in X domain.\n");
+
+            opponentHit = true;
+            return true;
+
+          }if (((dir === 'W') || (dir === 'S')) && 
+            (newPlayerY < slayerOne.z + 2) && (newPlayerY > slayerOne.z - 2) && 
+            (newPlayerX < slayerOne.x + 2) && (newPlayerX > slayerOne.x - 2)) {
+            console.log("Violating in Y domain.\n");
+
+            opponentHit = true;
+            return true; 
+
+          }if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
+            wallHit = true;
+            return true;
           } else {
             console.log("Not violating.\n"); 
             return false; 
