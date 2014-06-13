@@ -1,0 +1,161 @@
+			onFocus="if(this.value == 'password') {this.value = '';}" 
+			onBlur="if (this.value == '') {this.value = 'password';}"
+
+
+
+.rules {
+	color:white;
+	-moz-box-shadow:inset 0px 1px 0px 0px #67a138;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #67a138;
+	box-shadow:inset 0px 1px 0px 0px #67a138;
+	background-color:#2e7d35;
+	border:1px solid #205910;
+	width: 40%;
+	padding: 15px; 
+	color: white; 
+	font-weight: bold; 
+	font-family: Arial;
+	text-shadow: 2px 0 0 #4B088A, -2px 0 0 #4B088A, 0 2px 0 #4B088A, 0 -2px 0 #4B088A, 1px 1px #4B088A, -1px -1px 0 #4B088A, 1px -1px 0 #4B088A, -1px 1px 0 #4B088A;
+}
+
+.rules {
+	color:#4C0B5F;
+	-moz-box-shadow:inset 0px 1px 0px 0px #67a138;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #67a138;
+	box-shadow:inset 0px 1px 0px 0px #67a138;
+	background-color:#2e7d35;
+	border:1px solid #205910;
+	width: 40%;
+	padding: 15px; 
+	font-weight: bold; 
+	font-family: Arial;
+	text-shadow: 1px 0 0 #B18904, -1px 0 0 #B18904, 0 1px 0 #B18904, 0 -1px 0 #B18904, 1px 1px #B18904, -1px -1px 0 #B18904, 1px -1px 0 #B18904, -1px 1px 0 #B18904;
+}
+
+
+
+	-moz-box-shadow:inset 0px 1px 0px 0px #67a138;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #67a138;
+	box-shadow:inset 0px 1px 0px 0px #67a138;
+	background-color:#2e7d35;
+	border:1px solid #205910;
+	display:inline-block;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	height:40px;
+	line-height:40px;
+	width:300px;
+	text-decoration:none;
+	text-align:center;
+	text-shadow:1px 1px 0px #638033;
+
+
+
+
+<!--		<div align="center">
+			<form name="login" onsubmit="return validateForm()" method="post">
+			
+			<div>
+			<input type="text" name="username" style="size:25pt; color:#848484" value="username" 
+			onFocus="if(this.value == 'username') {this.value = '';}" 
+			onBlur="if (this.value == '') {this.value = 'username';}" />
+			</div>
+
+			<div>
+			<input type="text" name="password" style="size:25pt; color:#848484" value="password" 
+			onFocus="if(this.value == 'password') {this.value = '';}" 
+			onBlur="if (this.value == '') {this.value = 'password';}" />
+			</div>
+			
+			<div>
+			<input type="submit" value="Submit">
+			</div>
+	
+			</form>
+		</div> -->
+
+
+
+echo '<script type="text/javascript">alert("Data has been submitted");</script>';
+
+
+echo '<script type="text/javascript">alert("Succeeded");</script>'; 
+} else { 
+	echo '<script type="text/javascript">alert("Failed");</script>'; 
+}
+
+
+
+
+
+					<div>
+						<div>
+						<br>
+						<div class="buttonborder" style="float: left">
+							<input type="password" name="newpassword" class="entertext" placeholder="enter password"/>
+						</div>
+						</div>
+
+						<div>
+						<br>
+						<div class="buttonborder" style="float: right">
+							<input type="password" name="confirmpassword" class="entertext" placeholder="confirm password"/>
+						</div>
+						</div>
+					</div>
+
+
+
+/*
+		$arr = pg_fetch_array($result, 0, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n";  
+		$arr = pg_fetch_array($result, 1, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 2, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 3, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 4, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 5, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 6, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 7, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; 
+		$arr = pg_fetch_array($result, 8, PGSQL_NUM);
+		echo $arr[0] . "\n"; 
+		echo $arr[1] . "\n"; 
+		echo $arr[2] . "\n\n"; */
+
+
+		/*$count = pg_query($connex, "SELECT COUNT(*) FROM Users"); */
+
+
+
+/*
+ini_set("SMTP", "automail.cc.ic.ac.uk"); 
+ini_set("smtp_port", "465");
+ini_set("username", "ec1112@ic.ac.uk"); 
+ini_set("password", "P1gP!gl3t"); 
+*/
+
