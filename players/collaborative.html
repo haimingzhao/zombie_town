@@ -181,7 +181,8 @@
             wallHit = false, 
             count = 120,
             score = 0,
-            alive = true; 
+            alive = true,
+            ready = false; 
 
         // var socket = io.connect();
 
@@ -256,6 +257,7 @@
         socket.on('connect', function() {
           console.log('connect');
           socket.emit('addUser');
+          socket.send({'collab': ready});
         });
 
         socket.on('message', function(obj) {
@@ -291,6 +293,9 @@
             humans[obj.humanTurned].material.color.setHex(0x4B088A);
             humans[obj.humanTurned].turned = true;
           }
+          if('ready' in obj) {
+            ready = true;
+          }
           if('remove' in obj) {
             console.log('removed ' + obj.remove);
             if(obj.remove === 'z') {
@@ -299,14 +304,15 @@
               scene.remove(zombieTwo);
             }
           }
-          // if('playerDisconnect' in obj) {
-          //   console.log(obj.playerDisconnect + 'disconnected');
-          //   if(obj.playerDisconnect%2 === 0) {
-          //     scene.remove(zombie);
-          //   } else {
-          //     scene.remove(slayer);
-          //   }
-          // }
+          if('playerDisconnect' in obj) {
+            ready = false;
+            console.log(obj.playerDisconnect + 'disconnected');
+            if(obj.playerDisconnect%2 === 0) {
+              scene.remove(zombieOne);
+            } else {
+              scene.remove(slayerTwo);
+            }
+          }
         });
 
         function addCamera(type) {
@@ -328,6 +334,7 @@
           //   });
           //   timerTicks = 0; 
           // }
+          if(ready) {
 
           if (clienttype === 'z') {   
             if(alive) {
@@ -475,6 +482,7 @@
             }
           }
         }
+      }
         }
 
         function inSolidRange(keyPressed) {
@@ -638,7 +646,6 @@
         renderer.render(scene, camera);
         cameraControls.update();
         movement();
-
       }
 
     </script>

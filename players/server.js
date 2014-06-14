@@ -16,7 +16,8 @@ var players = [],
     switchingInProgress = false,
     competitive = false,
     colaborative = false,
-    single = false;
+    single = false,
+    allPlayers = 0;
 
 app.configure(function() {
     app.use(express.static(__dirname + '/'));
@@ -88,7 +89,6 @@ var io = socket.listen(server);
     client.room = 'room' + (Math.floor(client.id/2)).toString();
     rooms.push(client.room);
     client.send({room: client.room});
-
     });
 
     // var i;
@@ -109,7 +109,15 @@ var io = socket.listen(server);
     //competitive mode
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
-        console.log(JSON.stringify(otherplayerid)); 
+        console.log(JSON.stringify(otherplayerid));
+
+        if('comp' in message) {
+            allPlayers++;
+            if(allPlayers%2 === 0) {
+                client.send({'ready': client.type});
+                players[otherplayerid].send({'ready': client.type});
+            }
+        }
 
         if('zombie' in message) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
@@ -159,6 +167,14 @@ var io = socket.listen(server);
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
         // console.log(JSON.stringify(otherplayerid)); 
+
+        if('collab' in message) {
+            allPlayers++;
+            if(allPlayers%2 === 0) {
+                client.send({'ready': client.type});
+                players[otherplayerid].send({'ready': client.type});
+            }
+        }
 
         if('loadHumans' in message) {
             console.log('loadHumans');
@@ -223,14 +239,16 @@ var io = socket.listen(server);
     })
 
     client.on('disconnect', function() {
+        var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1; 
         players.splice(client.id, client.id);
         console.log(players);
         if(client.id === 0) {
-            players[client.id+1].send({'playerDisconnect': client.id});
+            players[otherplayerid].send({'playerDisconnect': client.id});
         }
         if(client.id === 1) {
-            players[client.id-1].send({'playerDisconnect': client.id});
+            players[otherplayerid].send({'playerDisconnect': client.id});
         }
+        players.splice(otherplayerid, otherplayerid);
     });
 
     function respawn() {

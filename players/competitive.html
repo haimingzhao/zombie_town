@@ -178,7 +178,8 @@
           wallHit = false, 
           switchingInProgress = false,
           count = 120,
-          score = 0; 
+          score = 0,
+          ready = false; 
 
         // var socket = io.connect();
 
@@ -234,6 +235,7 @@
         socket.on('connect', function() {
           console.log('connect');
           socket.emit('addUser');
+          socket.send({'comp': ready})
         });
 
         socket.on('message', function(obj) {
@@ -287,8 +289,12 @@
             humans[obj.humanTurned].material.color.setHex(0x4B088A);
             humans[obj.humanTurned].turned = true;
           }
+          if('ready' in obj) {
+            ready = true;
+          }
           if('playerDisconnect' in obj) {
             console.log(obj.playerDisconnect + 'disconnected');
+            ready = false;
             if(obj.playerDisconnect%2 === 0) {
               scene.remove(zombie);
             } else {
@@ -315,6 +321,8 @@
             console.log('switchingInProgress'); 
             return; 
           }
+
+          if(ready) {
 
           // timerTicks++; 
 
@@ -453,6 +461,7 @@
               socket.send({'slayer': [slayer.position]});
             }
           }
+        }
         };
 
         function inSolidRange(keyPressed) {
