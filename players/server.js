@@ -1,6 +1,10 @@
 var express = require('express');
 var app = express();
+
 var socket = require('socket.io');
+var path = require('path');
+var bodyParser = require('body-parser');
+var favicon = require('serve-favicon');
 
 var players = [],
     rooms = [],
@@ -18,9 +22,19 @@ var players = [],
     colaborative = false,
     single = false;
 
-app.configure(function() {
-    app.use(express.static(__dirname + '/'));
+app.use(favicon(__dirname + '/public/assets/favicon.ico'));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded());
+app.use(express.static(path.join(__dirname, 'public')));
+
+/// catch 404 and forwarding to error handler
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
+
+//////////////////////server and socketio////////////////////////////
 
 var server = app.listen(3000);
 var io = socket.listen(server);

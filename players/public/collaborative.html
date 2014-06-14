@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>ZombieTown</title>
+		<style>canvas { width: 100%; height: 100% }</style>
+		<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+		<script src="lib/three.js"></script>
+		<script src="js/keyboard.js"></script>
+	</head>
+	
+  <body>
+
+    <script src="lib/TrackballControls.js"></script>
+    <script src="lib/Detector.js"></script>
+    <script type="x-shader/x-vertex" id="vertexShader">
+      varying vec3 vWorldPosition;
+      void main() {
+        vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+        vWorldPosition = worldPosition.xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+    </script>
+    <script type="x-shader/x-fragment" id="fragmentShader">
+      uniform vec3 topColor;
+      uniform vec3 bottomColor;
+      uniform float offset;
+      uniform float exponent;
+
+      varying vec3 vWorldPosition;
+
+      void main() {
+        float h = normalize( vWorldPosition + offset ).y;
+        gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( h, exponent ), 0.0 ) ), 1.0 );
+      }
+    </script>
+
+    <script>
+      // if ( !Detector.webgl ) Detector.addGetWebGLMessage();
+      
+      var socket = io.connect();
+
+      // Set up the scene, camera, and renderer as global variables.
+      var scene, camera, renderer;
+      var cameraControls;
+      var clock = new THREE.Clock();
+
+      init();
+      animate();
+
+      // Sets up the scene.
+      function init() {
+
+        // setUpScene(scene, camera);
+
+        // Create the scene and set the scene size.
+        scene = new THREE.Scene();
+        
+        //fog
+        scene.fog = new THREE.Fog( 0xffffff, 50, 500);
+        var WIDTH = window.innerWidth,
+            HEIGHT = window.innerHeight;
+
+        // Create a camera, zoom it out from the model a bit, and add it to the scene.
+        camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 20000);
+        camera.position.set(0,20,50);
+        scene.add(camera);
+
+        // Create an event listener that resizes the renderer with the browser window.
+        window.addEventListener('resize', function() {
+          var WIDTH = window.innerWidth,
+              HEIGHT = window.innerHeight;
+          renderer.setSize(WIDTH, HEIGHT);
+          camera.aspect = WIDTH / HEIGHT;
+          camera.updateProjectionMatrix();
+        });
+
+        //Lightings
+        var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 1 );
+          hemiLight.color.setHSL( 0.6, 1, 0.75 );
+          hemiLight.groundColor.setHSL( 0.1, 0.8, 0.7 );
+          hemiLight.position.y = 500;
+          hemiLight.position.x = 400;
+          scene.add( hemiLight );
+        
+        var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI / 2, 1 );
+          light.position.set( 300, 1000, 1200);
+          light.target.position.set( 0, 0, 0 );
+
+          light.castShadow = true;
+          light.intensity = 0.8;
+
+          light.shadowCameraNear = 1200;
+          light.shadowCameraFar = 2500;
+          light.shadowCameraFov = 10;
+
+          // light.shadowCameraVisible = true;
+
+          light.shadowDarkness = 0.5;
+
+          light.shadowMapWidth = 1024;
+          light.shadowMapHeight = 768;
+          scene.add(light);
+        
+        // SKYDOME
+        var vertexShader = document.getElementById( 'vertexShader' ).textContent;
+        var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+        var uniforms = {
+          topColor:    { type: "c", value: new THREE.Color( 0x000000) },
+          bottomColor: { type: "c", value: new THREE.Color( 0xffffff) },
+          offset:    { type: "f", value: 400 },
+          exponent:  { type: "f", value: 0.6 }
+        }
+        uniforms.topColor.value.copy( hemiLight.color );
+
+        scene.fog.color.copy( uniforms.bottomColor.value );
+
+        var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
+        var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
+
+        var sky = new THREE.Mesh( skyGeo, skyMat );
+        scene.add( sky );
+
+        // axes helper
+        var axes = new THREE.AxisHelper(200);
+          scene.add( axes );
+
+        // Create a renderer and add it to the DOM.
+        renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setClearColor(scene.fog.color, 1);
+        renderer.domElement.style.position = "relative";
+        document.body.appendChild(renderer.domElement);
+
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapType = THREE.PCFShadowMap;
+
+        // Load in the mesh and add it to the scene.
+        var loader = new THREE.JSONLoader();
+        loader.load( "assets/models/map1/map1.js", function(geometry, materials){
+          mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
+          mesh.position.set( 0, 0, 0 );
+          mesh.scale.set(1,1,1);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          scene.add(mesh);
+        });
+
+        addCharacters(); 
+
+        // Add OrbitControls so that we can pan around with the mouse.
+        // controls = new THREE.OrbitControls(camera, renderer.domElement);
+        // CONTROLS
+        cameraControls = new THREE.TrackballControls( camera, renderer.domElement );
+        var delta = clock.getDelta();
+        cameraControls.update( delta );
+
+        setInterval(timer, 1000);
+
+      }
+
+  /*
+  *********************************************************************************************************************
+  *********************************************************************************************************************
+  */
+        var zombieOne,
+            zombieTwo,
+            slayerOne,
+            slayerTwo,
+            clientid,
+            clienttype, 
+            room,
+            keyPressed,
+            humans = [],
+            humanHit = false,
+            opponentHit = false,
+            otherPlayerHit = false, 
+            timerTicks = 0,
+            wallHit = false, 
+            count = 120,
+            score = 0,
+            alive = true; 
+
+        // var socket = io.connect();
+
+        function addCharacters () {
+          var geometry = new THREE.CubeGeometry(5, 5, 5);
+          var material = new THREE.MeshBasicMaterial({color: 0x458B00});
+          zombieOne = new THREE.Mesh(geometry, material);
+          zombieOne.position.x = -10;
+          zombieOne.position.z = -10;
+          zombieOne.position.y = 2.5;
+          scene.add(zombieOne);
+
+          var geometry = new THREE.CubeGeometry(5, 5, 5);
+          var material = new THREE.MeshBasicMaterial({color: 0x458B00});
+          zombieTwo = new THREE.Mesh(geometry, material);
+          zombieTwo.position.x = 20;
+          zombieTwo.position.z = 20;
+          zombieTwo.position.y = 2.5;
+          scene.add(zombieTwo);
+
+          var geometry = new THREE.CubeGeometry(5, 5, 5);
+          var material = new THREE.MeshBasicMaterial({color: 0xf9CBA7F});
+          slayerOne = new THREE.Mesh(geometry, material);
+          slayerOne.position.x = 30;
+          slayerOne.position.z = 30;
+          slayerOne.position.y = 2.5;
+          scene.add(slayerOne);
+
+          var geometry = new THREE.CubeGeometry(5, 5, 5);
+          var material = new THREE.MeshBasicMaterial({color: 0xFF1CAE});
+          slayerTwo = new THREE.Mesh(geometry, material);
+          slayerTwo.position.x = 40;
+          slayerTwo.position.z = 40;
+          slayerTwo.position.y = 2.5;
+          scene.add(slayerTwo);
+
+          socket.on('message', function(obj) {
+            // if('humans' in obj) {
+            //   var i;
+            //   console.log(humans.length);
+            //   for(i = 0; i < (obj.humans).length; i++) {
+            //     humans.push(obj.humans[i]);
+            //     var geometry = new THREE.CubeGeometry(5, 5, 5);
+            //     var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+            //     humans[i] = new THREE.Mesh(geometry, material);
+            //     humans[i].position.y = 2.5;
+            //     humans[i].position.x = obj.humans[i].x;
+            //     humans[i].position.z = obj.humans[i].z;
+            //     humans[i].turned = false;
+            //     scene.add(humans[i]);
+            //     console.log('human is at ' + humans[i].position.x + ', ' + humans[i].position.z);
+            //   }
+            // }
+            if('humanPos' in obj) {
+              console.log(JSON.stringify(obj));
+              humans.push(obj.humanName);
+              // console.log(JSON.stringifynumb(humans));
+                var geometry = new THREE.CubeGeometry(5, 5, 5);
+                var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+                humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
+              humans[obj.humanIndex].position.x = obj.humanPos[0];
+              humans[obj.humanIndex].position.z = obj.humanPos[1];
+              humans[obj.humanIndex].position.y = 2.5;
+              console.log('human is at ' + obj.humnPos[0] + ', ' + obj.humanPos[1]);
+              scene.add(humans[obj.humanIndex]);
+            }
+          });
+
+        };
+
+
+        socket.on('connect', function() {
+          console.log('connect');
+          socket.emit('addUser');
+        });
+
+        socket.on('message', function(obj) {
+          console.log(obj);
+          if('room' in obj) {
+            console.log('we are in room ' + obj.room);
+            room = obj.room;
+          }
+          if('newPosition' in obj) {
+            //The client is zombieOne - want zombie 2 location
+            if('zombieTwo' in obj.newPosition) {
+              zombieTwo.position.x = obj.newPosition.zombieTwo[0].x;
+              zombieTwo.position.z = obj.newPosition.zombieTwo[0].z;
+            } else { 
+              zombieOne.position.x = obj.newPosition.zombieOne[0].x;
+              zombieOne.position.z = obj.newPosition.zombieOne[0].z;
+            }
+            //Give both slayer positions
+
+          }
+          if('type' in obj) {
+            console.log(JSON.stringify(obj));
+            clienttype = obj.type;
+            addCamera(obj.type); 
+            if(clienttype === 's') {
+              socket.send({'loadHumans': clienttype});
+            }
+          }
+          if('totalScore' in obj) {
+            console.log('other player score is ' + JSON.stringify(obj.totalScore));
+          }
+          if('humanTurned' in obj) {
+            humans[obj.humanTurned].material.color.setHex(0x4B088A);
+            humans[obj.humanTurned].turned = true;
+          }
+          if('remove' in obj) {
+            console.log('removed ' + obj.remove);
+            if(obj.remove === 'z') {
+              scene.remove(zombieOne);
+            } else {
+              scene.remove(zombieTwo);
+            }
+          }
+          // if('playerDisconnect' in obj) {
+          //   console.log(obj.playerDisconnect + 'disconnected');
+          //   if(obj.playerDisconnect%2 === 0) {
+          //     scene.remove(zombie);
+          //   } else {
+          //     scene.remove(slayer);
+          //   }
+          // }
+        });
+
+        function addCamera(type) {
+          if (type === 'z') {
+            camera.lookAt(zombieOne.position);
+            zombieOne.add(camera);
+          } else {
+            camera.lookAt(zombieTwo.position);
+            zombieTwo.add(camera);
+          }
+        }
+
+        function movement() {
+          // timerTicks++; 
+
+          // if (timerTicks === 10) {
+          //   humans.forEach(function(human) {
+          //     human.position.x += 1; 
+          //   });
+          //   timerTicks = 0; 
+          // }
+
+          if (clienttype === 'z') {   
+            if(alive) {
+            if(Key.isDown(Key.A)) {
+                keyPressed = 'A';
+                if(!inSolidRange(keyPressed)){
+                  console.log('client id = 0'); 
+                  zombieOne.position.x -= 2;
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieOne);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
+                    score += 1;
+                    socket.send({'scoreCol': score});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+            }
+            if(Key.isDown(Key.W)) {
+              keyPressed = 'W';
+                if(!inSolidRange(keyPressed)){
+                  zombieOne.position.z += 2;
+                } else if(!wallHit) {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieOne);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit){
+                    score += 1;
+                    socket.send({'scoreCol': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+            }
+            if(Key.isDown(Key.S)) {
+              keyPressed = 'S';
+              if(!inSolidRange(keyPressed)){
+                zombieOne.position.z -= 2;
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieOne);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
+                    score += 1;
+                    socket.send({'scoreCol': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+              }
+              if(Key.isDown(Key.D)) {
+                keyPressed = 'D';
+                if(!inSolidRange(keyPressed)) {
+                    zombieOne.position.x += 2;
+                } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieOne);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
+                    score += 1;
+                    socket.send({'scoreCol': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieOne': [zombieOne.position]});
+              }
+            }
+
+          } else if(clienttype === 's') {  
+          if(alive) {     
+            if(Key.isDown(Key.A)) {
+              keyPressed = 'A';
+                if(!inSolidRange(keyPressed)){
+                  console.log('client id = 1');
+                  zombieTwo.position.x -= 2;
+                } else {
+                  if(!humanHit && opponentHit && !otherPlayerHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieTwo);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
+                    score += 1;
+                    socket.send({'scoreCol': 1});
+                    humanHit = false;
+                  }
+                }
+                socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+            if(Key.isDown(Key.W)) {
+              keyPressed = 'W';
+              if(!inSolidRange(keyPressed)){
+                zombieTwo.position.z += 2;
+              } else {
+                if(!humanHit && opponentHit) {
+                  socket.send({'gameOverCol': [clienttype]});
+                  scene.remove(zombieTwo);
+                  alive = false;
+                } else if(!wallHit && !otherPlayerHit && humanHit) {
+                  score += 1;
+                  socket.send({'scoreCol': 1});
+                  humanHit = false;
+                }
+              }
+              socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+            if(Key.isDown(Key.S)) {
+              keyPressed = 'S';
+              if(!inSolidRange(keyPressed)){
+                zombieTwo.position.z -= 2;
+              } else {
+                  if(!humanHit && opponentHit) {
+                    socket.send({'gameOverCol': [clienttype]});
+                    scene.remove(zombieTwo);
+                    alive = false;
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
+                    score += 1;
+                    socket.send({'scoreCol': 1});
+                    humanHit = false;
+                  }
+              }
+              socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+            if(Key.isDown(Key.D)) {
+              keyPressed = 'D';
+              if(!inSolidRange(keyPressed)){
+                zombieTwo.position.x += 2;
+              } else {
+                if(!humanHit && opponentHit) {
+                  socket.send({'gameOverCol': [clienttype]});
+                  scene.remove(zombieTwo);
+                  alive = false;
+                } else if(!wallHit && !otherPlayerHit && humanHit) {
+                  score += 1;
+                  socket.send({'scoreCol': 1});
+                  humanHit = false;
+                }
+              }
+            socket.send({'zombieTwo': [zombieTwo.position]});
+            }
+          }
+        }
+        }
+
+        function inSolidRange(keyPressed) {
+
+          var slayerOnePos = slayerOne.position,
+              slayerTwoPos = slayerTwo.position,
+              zombieOnePosX = zombieOne.position.x,
+              zombieOnePosZ = zombieOne.position.z,
+              zombieTwoPosX = zombieTwo.position.x,
+              zombieTwoPosZ = zombieTwo.position.z;
+
+          if(clienttype === 'z') {
+            switch(keyPressed) {
+              case 'W' : return inViolation(zombieOnePosX, zombieOnePosZ + 2,
+                                            zombieTwo.position, 
+                                            slayerOnePos,
+                                            slayerTwoPos, 'W');
+              case 'S' : return inViolation(zombieOnePosX, zombieOnePosZ - 2, 
+                                            zombieTwo.position, 
+                                            slayerOnePos,                                            
+                                            slayerTwoPos, 'S');
+              case 'A' : return inViolation(zombieOnePosX - 2, zombieOnePosZ,
+                                            zombieTwo.position, 
+                                            slayerOnePos,   
+                                            slayerTwoPos, 'A');
+              case 'D' : return inViolation(zombieOnePosX + 2, zombieOnePosZ,
+                                            zombieTwo.position, 
+                                            slayerOnePos,   
+                                            slayerTwoPos, 'D');
+            }
+          } else if(clienttype === 's') {
+            switch(keyPressed) {
+              case 'W' : return inViolation(zombieTwoPosX, zombieTwoPosZ + 2, 
+                                            zombieOne.position,
+                                            slayerOnePos,
+                                            slayerTwoPos, 'W');
+              case 'S' : return inViolation(zombieTwoPosX, zombieTwoPosZ - 2, 
+                                            zombieOne.position,
+                                            slayerOnePos,
+                                            slayerTwoPos, 'S');
+              case 'A' : return inViolation(zombieTwoPosX - 1, zombieTwoPosZ, 
+                                            zombieOne.position,
+                                            slayerOnePos,
+                                            slayerTwoPos, 'A');
+              case 'D' : return inViolation(zombieTwoPosX + 1, zombieTwoPosZ, 
+                                            zombieOne.position,
+                                            slayerOnePos,
+                                            slayerTwoPos, 'D');
+            }
+          }
+        };
+
+        function inViolation(newPlayerX, newPlayerY, otherPlayer, slayerOne, slayerTwo, dir) {
+          //inviolation of human
+          console.log('Number of humans: ' + humans.length);
+          var i;
+          for(i = 0; i < humans.length; i++) {
+            if (((dir === 'A') || (dir === 'D')) && 
+              (newPlayerX < humans[i].position.x + 2.5) && (newPlayerX > humans[i].position.x - 2.5) && 
+              (newPlayerY < humans[i].position.z + 2.5) && (newPlayerY > humans[i].position.z - 2.5)) {
+              console.log("Violating in X domain.\n");
+
+              if(!humans[i].turned) {
+                humanHit = true;
+                humans[i].material.color.setHex(0x4B088A);
+                humans[i].turned = true;
+                socket.send({'humanHit': i});;
+              }
+              return true; 
+            //inviolation of other player
+            } else if (((dir === 'W') || (dir === 'S')) && 
+              (newPlayerY < humans[i].position.z + 2.5) && (newPlayerY > humans[i].position.z - 2.5) && 
+              (newPlayerX < humans[i].position.x + 2.5) && (newPlayerX > humans[i].position.x - 2.5)) {
+              console.log("Violating in Y domain.\n");
+
+                if(!humans[i].turned) {
+                  humanHit = true;
+                  humans[i].material.color.setHex(0x4B088A);
+                  humans[i].turned = true;
+                  socket.send({'humanHit': i});
+                }
+                return true; 
+            }
+          }
+          //inviolation of other player
+          if (((dir === 'A') || (dir === 'D')) && 
+            (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5) && 
+            (newPlayerY < otherPlayer.z + 2.5) && (newPlayerY > otherPlayer.z - 2.5)) {
+            console.log("Violating in X domain.\n");
+            otherPlayerHit = true;
+            return true;
+
+          } else if (((dir === 'W') || (dir === 'S')) && 
+            (newPlayerY < otherPlayer.z + 2.5) && (newPlayerY > otherPlayer.z - 2.5) && 
+            (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5)) {
+            console.log("Violating in Y domain.\n");
+            otherPlayerHit = true;
+            return true; 
+          }
+
+          //involation of slayerOne
+          if (((dir === 'A') || (dir === 'D')) && 
+            (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5) && 
+            (newPlayerY < slayerOne.z + 2.5) && (newPlayerY > slayerOne.z - 2.5)) {
+            console.log("Violating in X domain.\n");
+
+            opponentHit = true;
+            return true;
+
+          } else if (((dir === 'W') || (dir === 'S')) && 
+            (newPlayerY < slayerOne.z + 2.5) && (newPlayerY > slayerOne.z - 2.5) && 
+            (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5)) {
+            console.log("Violating in Y domain.\n");
+
+            opponentHit = true;
+            return true; 
+          } 
+          //involation of slayerTwo
+          if (((dir === 'A') || (dir === 'D')) && 
+            (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5) && 
+            (newPlayerY < slayerTwo.z + 2.5) && (newPlayerY > slayerTwo.z - 2.5)) {
+            console.log("Violating in X domain.\n");
+
+            opponentHit = true;
+            return true;
+
+          }if (((dir === 'W') || (dir === 'S')) && 
+            (newPlayerY < slayerTwo.z + 2.5) && (newPlayerY > slayerTwo.z - 2.5) && 
+            (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5)) {
+            console.log("Violating in Y domain.\n");
+
+            opponentHit = true;
+            return true; 
+
+          }if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
+            wallHit = true;
+            return true;
+          } else {
+            console.log("Not violating.\n"); 
+            return false; 
+          }
+        }
+
+        function timer() {
+          count -= 1;
+          if(count <= 0) {
+            clearInterval(count);
+            return;
+          } 
+          //do something here to show timer updating??? ----------------------------------------
+          document.getElementById("timer").innerHTML=count + " secs";
+        }
+
+      // Renders the scene and updates the render as needed.
+      function animate() {
+
+        // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+        requestAnimationFrame(animate);
+        
+        // Render the scene.
+        renderer.render(scene, camera);
+        cameraControls.update();
+        movement();
+
+      }
+
+    </script>
+    <span id="timer"></span>
+    <span id="score"></span>
+	</body>
+</html>
