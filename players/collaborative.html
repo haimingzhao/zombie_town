@@ -323,7 +323,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
-                  } else if(!wallHit && !otherPlayerHit) {
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'score': score});
                     humanHit = false;
@@ -340,7 +340,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
-                  } else if(!wallHit && !otherPlayerHit){
+                  } else if(!wallHit && !otherPlayerHit && humanHit){
                     score += 1;
                     socket.send({'score': 1});
                     humanHit = false;
@@ -357,7 +357,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
-                  } else if(!wallHit && !otherPlayerHit) {
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'score': 1});
                     humanHit = false;
@@ -374,7 +374,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
-                  } else if(!wallHit && !otherPlayerHit) {
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'score': 1});
                     humanHit = false;
@@ -396,7 +396,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieTwo);
                     alive = false;
-                  } else if(!wallHit) {
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'score': 1});
                     humanHit = false;
@@ -413,7 +413,7 @@
                   socket.send({'zombieWinCol': [clienttype]});
                   scene.remove(zombieTwo);
                   alive = false;
-                } else if(!wallHit && !otherPlayerHit) {
+                } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
                   socket.send({'score': 1});
                   humanHit = false;
@@ -430,7 +430,7 @@
                     socket.send({'zombieWinCol': [clienttype]});
                     scene.remove(zombieTwo);
                     alive = false;
-                  } else if(!wallHit && !otherPlayerHit) {
+                  } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'score': 1});
                     humanHit = false;
@@ -447,7 +447,7 @@
                   socket.send({'zombieWinCol': [clienttype]});
                   scene.remove(zombieTwo);
                   alive = false;
-                } else if(!wallHit && !otherPlayerHit) {
+                } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
                   socket.send({'score': 1});
                   humanHit = false;

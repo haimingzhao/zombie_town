@@ -32,9 +32,6 @@ var io = socket.listen(server);
     io.sockets.on('connection', function(client) {
 
     //competitive mode
-
-    console.log('competitive');
-
     players.push(client);
 
     if(players.length%2 === 0) {
@@ -107,34 +104,6 @@ var io = socket.listen(server);
         }
     });
 
-    // if(colaborative) {
-    console.log('colaborative');
-
-    // players.push(client);
-
-    // if(players.length%2 === 0) {
-    //     players[players.length-1].type = 'z1'; 
-    // } else {
-    //     players[players.length-1].type = 'z2'; 
-    // }
-
-    // players[players.length-1].id = players.length-1; 
-    // console.log(JSON.stringify(players[players.length-1].type));
-
-    // client.send({'type': client.type});
-    // console.log({'type': client.type});
-
-    // client.score = 0;
-    // client.send({score: client.score});
-
-    // client.gameType = competitive;
-
-    // client.room = 'room' + (Math.floor(client.id/2)).toString();
-    // client.send({room: client.room});
-
-    // console.log('colaborative humans');
-    // client.send({'humans': humans});
-
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
         console.log(JSON.stringify(otherplayerid)); 
@@ -174,10 +143,16 @@ var io = socket.listen(server);
         }
     });
 
-    // }
-    if(single) {
-
-    }
+    //Don't need to send anything besides logging in high score. Don't need to add to array of players
+    //Need to get back score at the end.
+    client.on('message', function(message) {
+        if('gameOverSingle' in message) {
+            console.log('gameOverSingle');
+        }
+        if('scoreSingle' in message) {
+            console.log(message);
+        }
+    });
 
     client.on('disconnect', function() {
         players.splice(client.id, client.id);
