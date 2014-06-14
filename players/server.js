@@ -161,13 +161,13 @@ var io = socket.listen(server);
         // console.log(JSON.stringify(otherplayerid)); 
 
         if('loadHumans' in message) {
-        console.log('loadHumans');
-    var i;
-    for(i = 0; i < humans.length; i++) {
-        var humanPos = spawnHuman();
-        client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
-        players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
-    }  
+            console.log('loadHumans');
+            var i;
+            for(i = 0; i < humans.length; i++) {
+                var humanPos = spawnHuman();
+                client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+                players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+            }  
         }
 
         //Send movements to other player
@@ -190,6 +190,7 @@ var io = socket.listen(server);
         //Send cumulative score to both players
         if('scoreCol' in message) {
             client.score += message.scoreCol;
+            players[otherplayerid].score = client.score;
             console.log('client ' + client.id + 'score is ' + client.score);
             players[otherplayerid].send({'totalScore': message.scoreCol}); 
         }
@@ -211,6 +212,15 @@ var io = socket.listen(server);
             client.score = message;
         }
     });
+
+    client.on('single', function() {
+            console.log('loadHumans');
+            var i;
+            for(i = 0; i < humans.length; i++) {
+                var humanPos = spawnHuman();
+                client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+            }  
+    })
 
     client.on('disconnect', function() {
         players.splice(client.id, client.id);

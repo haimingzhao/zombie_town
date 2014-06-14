@@ -245,7 +245,7 @@
               humans[obj.humanIndex].position.x = obj.humanPos[0];
               humans[obj.humanIndex].position.z = obj.humanPos[1];
               humans[obj.humanIndex].position.y = 2.5;
-              console.log('human is at ' + obj.humnPos[0] + ', ' + obj.humanPos[1]);
+              // console.log('human is at ' + obj.humnPos[0] + ', ' + obj.humanPos[1]);
               scene.add(humans[obj.humanIndex]);
             }
           });
@@ -343,7 +343,7 @@
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'scoreCol': score});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
                 }
