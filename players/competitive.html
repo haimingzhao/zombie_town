@@ -219,6 +219,7 @@
 
         socket.on('connect', function() {
           console.log('connect');
+          socket.emit('addUser');
         });
 
         socket.on('message', function(obj) {
@@ -228,18 +229,20 @@
             room = obj.room;
           }
           if('newPosition' in obj) {
-            if (clientid === 0) {
+            if (clientid%2 === 0) {
               console.log('We are the zombie.\n'); 
             } else {
               console.log('We are the slayer.\n'); 
             }
 
             if ('zombie' in obj.newPosition) {
+              console.log('zombie');
               zombie.position.x = obj.newPosition.zombie[0].x;
               zombie.position.z = obj.newPosition.zombie[0].z;
               switchingInProgress = false; 
               console.log('switchingInProgress unset'); 
-            } else {
+            } else if ('slayer' in obj.newPosition){
+              console.log('slayer');
               slayer.position.x = obj.newPosition.slayer[0].x;
               slayer.position.z = obj.newPosition.slayer[0].z;
               switchingInProgress = false; 
@@ -316,10 +319,10 @@
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
                       console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
+                      socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
-                      socket.send({'score': score});
+                      socket.send({'scoreComp': score});
                     humanHit = false;
                     }
                   }
@@ -333,10 +336,10 @@
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
                       console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
+                      socket.send({'switch': [clienttype]});
                     } else if(!wallHit){
                       score += 1;
-                      socket.send({'score': 1});
+                      socket.send({'scoreComp': 1});
                   humanHit = false;
                 }
                   }
@@ -350,10 +353,10 @@
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
                       console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
+                      socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
-                      socket.send({'score': 1});
+                      socket.send({'scoreComp': 1});
                   humanHit = false;
                 }
                   }
@@ -367,10 +370,10 @@
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
                       console.log('switchingInProgress set'); 
-                      socket.send({'zombieWin': [clienttype]});
+                      socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
-                      socket.send({'score': 1});
+                      socket.send({'scoreComp': 1});
                       humanHit = false;
                 }
                   }
@@ -388,7 +391,7 @@
                     if(opponentHit) {
                       switchingInProgress = true; 
                       console.log('switchingInProgress set'); 
-                      socket.send({'slayerWin': [clienttype]});
+                      socket.send({'switch': [clienttype]});
                 }
                   }
                   socket.send({'slayer': [slayer.position]});
@@ -401,7 +404,7 @@
                 if(opponentHit) {
                   switchingInProgress = true; 
                   console.log('switchingInProgress set'); 
-                  socket.send({'slayerWin': [clienttype]});
+                  socket.send({'switch': [clienttype]});
                 }
               }
               socket.send({'slayer': [slayer.position]});
@@ -414,7 +417,7 @@
                 if(opponentHit) {
                   switchingInProgress = true;  
                   console.log('switchingInProgress set'); 
-                  socket.send({'slayerWin': [clienttype]});
+                  socket.send({'switch': [clienttype]});
                 }
               }
               socket.send({'slayer': [slayer.position]});
@@ -427,7 +430,7 @@
                 if(opponentHit) {
                   switchingInProgress = true; 
                   console.log('switchingInProgress set');  
-                  socket.send({'slayerWin': [clienttype]});
+                  socket.send({'switch': [clienttype]});
                 }
               }
               socket.send({'slayer': [slayer.position]});

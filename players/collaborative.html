@@ -241,6 +241,8 @@
 
         socket.on('connect', function() {
           console.log('connect');
+          socket.emit('addUser');
+
         });
 
         socket.on('message', function(obj) {
@@ -266,8 +268,8 @@
             clienttype = obj.type;
             addCamera(obj.type); 
           }
-          if('otherScore' in obj) {
-            console.log('other player score is ' + JSON.stringify(obj.otherScore));
+          if('totalScore' in obj) {
+            console.log('other player score is ' + JSON.stringify(obj.totalScore));
           }
           if('humanTurned' in obj) {
             humans[obj.humanTurned].material.color.setHex(0x4B088A);
@@ -320,12 +322,12 @@
                   zombieOne.position.x -= 2;
                 } else {
                   if(!humanHit && opponentHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'score': score});
+                    socket.send({'scoreCol': score});
                     humanHit = false;
                   }
                 }
@@ -337,12 +339,12 @@
                   zombieOne.position.z += 2;
                 } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit){
                     score += 1;
-                    socket.send({'score': 1});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
                 }
@@ -354,12 +356,12 @@
                 zombieOne.position.z -= 2;
                 } else {
                   if(!humanHit && opponentHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'score': 1});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
                 }
@@ -371,12 +373,12 @@
                     zombieOne.position.x += 2;
                 } else {
                   if(!humanHit && opponentHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'score': 1});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
                 }
@@ -393,12 +395,12 @@
                   zombieTwo.position.x -= 2;
                 } else {
                   if(!humanHit && opponentHit && !otherPlayerHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieTwo);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'score': 1});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
                 }
@@ -410,12 +412,12 @@
                 zombieTwo.position.z += 2;
               } else {
                 if(!humanHit && opponentHit) {
-                  socket.send({'zombieWinCol': [clienttype]});
+                  socket.send({'gameOverCol': [clienttype]});
                   scene.remove(zombieTwo);
                   alive = false;
                 } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
-                  socket.send({'score': 1});
+                  socket.send({'scoreCol': 1});
                   humanHit = false;
                 }
               }
@@ -427,12 +429,12 @@
                 zombieTwo.position.z -= 2;
               } else {
                   if(!humanHit && opponentHit) {
-                    socket.send({'zombieWinCol': [clienttype]});
+                    socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieTwo);
                     alive = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
-                    socket.send({'score': 1});
+                    socket.send({'scoreCol': 1});
                     humanHit = false;
                   }
               }
@@ -444,12 +446,12 @@
                 zombieTwo.position.x += 2;
               } else {
                 if(!humanHit && opponentHit) {
-                  socket.send({'zombieWinCol': [clienttype]});
+                  socket.send({'gameOverCol': [clienttype]});
                   scene.remove(zombieTwo);
                   alive = false;
                 } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
-                  socket.send({'score': 1});
+                  socket.send({'scoreCol': 1});
                   humanHit = false;
                 }
               }
