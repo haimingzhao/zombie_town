@@ -189,8 +189,8 @@
           var geometry = new THREE.CubeGeometry(5, 5, 5);
           var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
           slayer = new THREE.Mesh(geometry, material);
-          slayer.position.x = 15;
-          slayer.position.z = 15;
+          slayer.position.x = 200;
+          slayer.position.z = 200;
           slayer.position.y = 2.5;
           scene.add(slayer);
 
@@ -255,19 +255,37 @@
 
         function movement() {
 
-          // timerTicks++; 
+          timerTicks++; 
 
-          // if (timerTicks === 10) {
-          //   humans.forEach(function(human) {
-          //     human.position.x += 1; 
-          //   });
-          //   timerTicks = 0; 
-          // } 
+          if (timerTicks === 10) {
+            humans.forEach(function(human) {
+              if(!human.turned && !atMapLimit(human.position.x, human.position.z)) {
+                // human.position.x += 1; 
+                var move = Math.floor((Math.random()*4)+1);
+                switch(move) {
+                  case 1:
+                    human.position.x += 2;
+                    break;
+                  case 2:
+                    human.position.x -= 2;
+                    break;
+                  case 3:
+                    human.position.z += 2;
+                    break;
+                  case 4:
+                    human.position.z -= 2;
+                    break;
+                }
+              }
+            });
+            timerTicks = 0; 
+          } 
             if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
-                if(!inSolidRange(keyPressed)){
+                // if(!inSolidRange(keyPressed)){
+                  inSolidRange(keyPressed);
                   zombie.position.x -= 2;
-                } else {
+                // } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});
@@ -277,13 +295,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                }
+                // }
             }
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
-                if(!inSolidRange(keyPressed)){
-                  zombie.position.z += 2;
-                } else if(!wallHit) {
+                // if(!inSolidRange(keyPressed)){
+                  inSolidRange(keyPressed);
+                  zombie.position.z -= 2;
+                // } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
@@ -293,13 +312,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                }
+                // }
             }
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
-              if(!inSolidRange(keyPressed)){
-                zombie.position.z -= 2;
-                } else {
+              // if(!inSolidRange(keyPressed)){
+                inSolidRange(keyPressed);
+                zombie.position.z += 2;
+                // } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
@@ -310,13 +330,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                }
+                // }
               }
               if(Key.isDown(Key.D)) {
                 keyPressed = 'D';
-                if(!inSolidRange(keyPressed)) {
+                // if(!inSolidRange(keyPressed)) {
+                  inSolidRange(keyPressed);
                     zombie.position.x += 2;
-                } else {
+                // } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
@@ -327,7 +348,19 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                }
+                // }
+              }
+
+              //Slayer AI
+              if(slayer.position.x > zombie.position.x) {
+                slayer.position.x -= 1;
+              } else {
+                slayer.position.x += 1;
+              }
+              if(slayer.position.z > zombie.position.z) {
+                slayer.position.z -= 1;
+              } else {
+                slayer.position.z += 1;
               }
         }
 
@@ -351,20 +384,20 @@
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
-              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5)) {
+              (newPlayerX < humans[i].position.x + 10) && (newPlayerX > humans[i].position.x - 10) && 
+              (newPlayerY < humans[i].position.z + 10) && (newPlayerY > humans[i].position.z - 10)) {
               console.log("Violating in X domain.\n");
 
               if(!humans[i].turned) {
                 humanHit = true;
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
-            }
+              }
             return true; 
 
             } else if (((dir === 'W') || (dir === 'S')) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5) && 
-              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5)) {
+              (newPlayerY < humans[i].position.z + 10) && (newPlayerY > humans[i].position.z - 10) && 
+              (newPlayerX < humans[i].position.x + 10) && (newPlayerX > humans[i].position.x - 10)) {
               console.log("Violating in Y domain.\n");
 
                 if(!humans[i].turned) {
@@ -391,13 +424,17 @@
 
             opponentHit = true;
             return true; 
-          } else if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
+          } else if(atMapLimit(newPlayerX, newPlayerY)) {
                 wallHit = true;
                 return true;
           } else {
             console.log("Not violating.\n"); 
             return false; 
           }
+        }
+
+        function atMapLimit(characterPosX, characterPosZ) {
+          return characterPosX === 296 || characterPosX === -296 || characterPosZ === 296 || characterPosZ === -296;
         }
 
         function timer() {

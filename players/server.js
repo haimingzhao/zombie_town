@@ -261,8 +261,26 @@ var io = socket.listen(server);
     function spawnHuman() {
         var initX = Math.floor((Math.random()*290)+1);
         var initZ = Math.floor((Math.random()*290)+1);
-        console.log(initX);
-        console.log(initZ);
-        return [initX, initZ];
+
+        var quadrant = Math.floor((Math.random()*4)+1);
+        switch(quadrant) {
+            case 1: 
+                console.log(initX);
+                console.log(initZ);
+                return [initX, initZ];
+            case 2:
+                console.log(-initX);
+                console.log(initZ);
+                return [-initX, initZ];
+            case 3:
+                console.log(initX);
+                console.log(-initZ);
+                return [initX, -initZ];
+            case 4:
+                console.log(-initX);
+                console.log(-initZ);
+                return [-initX, -initZ];
+        }
+        // return [initX, initZ];
     }
 });
