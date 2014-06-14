@@ -219,20 +219,34 @@
           scene.add(slayerTwo);
 
           socket.on('message', function(obj) {
-            if('humans' in obj) {
-              var i;
-              console.log(humans.length);
-              for(i = 0; i < (obj.humans).length; i++) {
-                humans.push(obj.humans[i]);
+            // if('humans' in obj) {
+            //   var i;
+            //   console.log(humans.length);
+            //   for(i = 0; i < (obj.humans).length; i++) {
+            //     humans.push(obj.humans[i]);
+            //     var geometry = new THREE.CubeGeometry(5, 5, 5);
+            //     var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+            //     humans[i] = new THREE.Mesh(geometry, material);
+            //     humans[i].position.y = 2.5;
+            //     humans[i].position.x = obj.humans[i].x;
+            //     humans[i].position.z = obj.humans[i].z;
+            //     humans[i].turned = false;
+            //     scene.add(humans[i]);
+            //     console.log('human is at ' + humans[i].position.x + ', ' + humans[i].position.z);
+            //   }
+            // }
+            if('humanPos' in obj) {
+              console.log(JSON.stringify(obj));
+              humans.push(obj.humanName);
+              // console.log(JSON.stringifynumb(humans));
                 var geometry = new THREE.CubeGeometry(5, 5, 5);
                 var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-                humans[i] = new THREE.Mesh(geometry, material);
-                humans[i].position.y = 2.5;
-                humans[i].position.x = -40;
-                humans[i].position.z = 20;
-                humans[i].turned = false;
-                scene.add(humans[i]);
-              }
+                humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
+              humans[obj.humanIndex].position.x = obj.humanPos[0];
+              humans[obj.humanIndex].position.z = obj.humanPos[1];
+              humans[obj.humanIndex].position.y = 2.5;
+              console.log('human is at ' + obj.humnPos[0] + ', ' + obj.humanPos[1]);
+              scene.add(humans[obj.humanIndex]);
             }
           });
 
@@ -242,7 +256,6 @@
         socket.on('connect', function() {
           console.log('connect');
           socket.emit('addUser');
-
         });
 
         socket.on('message', function(obj) {
@@ -267,6 +280,9 @@
             console.log(JSON.stringify(obj));
             clienttype = obj.type;
             addCamera(obj.type); 
+            if(clienttype === 's') {
+              socket.send({'loadHumans': clienttype});
+            }
           }
           if('totalScore' in obj) {
             console.log('other player score is ' + JSON.stringify(obj.totalScore));

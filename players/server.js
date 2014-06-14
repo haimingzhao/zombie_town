@@ -76,8 +76,8 @@ var io = socket.listen(server);
     }
 
     players[players.length-1].id = players.length-1; 
-    console.log(JSON.stringify(players[players.length-1].type));
-    console.log(players);
+    // console.log(JSON.stringify(players[players.length-1].type));
+    // console.log(players);
 
     client.send({'type': client.type});
     console.log({'type': client.type});
@@ -91,7 +91,20 @@ var io = socket.listen(server);
 
     });
 
-    client.send({'humans': humans});
+    // var i;
+    // for(i = 0; i < humans.length; i++) {
+    //     console.log(spawnHuman());
+    //     humans[i].id = spawnHuman();
+    //     console.log(humans[i].id);
+    // }
+    // client.send({'humans': humans});
+    // var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
+    // var i;
+    // for(i = 0; i < humans.length; i++) {
+    //     var humanPos = spawnHuman();
+    //     client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+    //     players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+    // }
 
     //competitive mode
     client.on('message',function(message) {
@@ -106,7 +119,6 @@ var io = socket.listen(server);
             console.log('slayer in room ' + client.room + JSON.stringify(message));
             players[otherplayerid].send({'newPosition': message});
         }
-
         // console.log(JSON.stringify(message));
 
         // if('zombie' in message) {
@@ -148,6 +160,16 @@ var io = socket.listen(server);
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
         // console.log(JSON.stringify(otherplayerid)); 
 
+        if('loadHumans' in message) {
+        console.log('loadHumans');
+    var i;
+    for(i = 0; i < humans.length; i++) {
+        var humanPos = spawnHuman();
+        client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+        players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
+    }  
+        }
+
         //Send movements to other player
         if('zombieOne' in message) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
@@ -158,7 +180,7 @@ var io = socket.listen(server);
             console.log('slayer in room ' + client.room + JSON.stringify(message));
             client.send({'newPosition': message});
             players[otherplayerid].send({'newPosition': message});
-        }
+        }    
         
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
@@ -206,5 +228,13 @@ var io = socket.listen(server);
         var newX = respawnPos[0]; 
         var newZ = respawnPos[1]; 
         return [newX, newZ];
+    }
+
+    function spawnHuman() {
+        var initX = Math.floor((Math.random()*290)+1);
+        var initZ = Math.floor((Math.random()*290)+1);
+        console.log(initX);
+        console.log(initZ);
+        return [initX, initZ];
     }
 });
