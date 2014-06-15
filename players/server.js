@@ -4,7 +4,7 @@ var socket = require('socket.io');
 
 var players = [],
     rooms = [],
-    humans = ['h1', 'h2'/*, 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10'*/],
+    humans = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10'],
     spawnPositions = [[-176, 224], 
                       [-176, 108], 
                       [146, 170],  
@@ -222,6 +222,7 @@ var io = socket.listen(server);
     client.on('message', function(message) {
         if('gameOverSingle' in message) {
             console.log('gameOverSingle');
+            client.send({'removeSingle': client.id});
         }
         if('scoreSingle' in message) {
             console.log(message);

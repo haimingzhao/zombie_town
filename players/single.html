@@ -177,7 +177,8 @@
           opponentHit = false,
           wallHit = false, 
           count = 120,
-          score = 0; 
+          score = 0,
+          alive = false; 
 
         function addCharacters () {
           var geometry = new THREE.CubeGeometry(5, 5, 5);
@@ -237,6 +238,9 @@
         });
 
         socket.on('message', function(obj) {
+          if('removeSingle' in obj) {
+            scene.remove(zombie);
+          }
 
           if('playerDisconnect' in obj) {
             console.log(obj.playerDisconnect + 'disconnected');
@@ -254,7 +258,6 @@
         }
 
         function movement() {
-
           timerTicks++; 
 
           if (timerTicks === 10) {
@@ -281,9 +284,11 @@
             timerTicks = 0; 
           } 
             if(Key.isDown(Key.A)) {
+                        alive = true;
+
                 keyPressed = 'A';
-                // if(!inSolidRange(keyPressed)){
-                  inSolidRange(keyPressed);
+                if(!inSolidRange(keyPressed)){
+                  // inSolidRange(keyPressed);
                   zombie.position.x -= 2;
                 // } else {
                   if(!humanHit && opponentHit) {
@@ -295,12 +300,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                // }
+                }
             }
             if(Key.isDown(Key.W)) {
+                        alive = true;
+
               keyPressed = 'W';
-                // if(!inSolidRange(keyPressed)){
-                  inSolidRange(keyPressed);
+                if(!inSolidRange(keyPressed)){
+                  // inSolidRange(keyPressed);
                   zombie.position.z -= 2;
                 // } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
@@ -312,12 +319,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                // }
+                }
             }
             if(Key.isDown(Key.S)) {
+                        alive = true;
+
               keyPressed = 'S';
-              // if(!inSolidRange(keyPressed)){
-                inSolidRange(keyPressed);
+              if(!inSolidRange(keyPressed)){
+                // inSolidRange(keyPressed);
                 zombie.position.z += 2;
                 // } else {
                   if(!humanHit && opponentHit) {
@@ -330,12 +339,14 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                // }
+                }
               }
               if(Key.isDown(Key.D)) {
+                          alive = true;
+
                 keyPressed = 'D';
-                // if(!inSolidRange(keyPressed)) {
-                  inSolidRange(keyPressed);
+                if(!inSolidRange(keyPressed)) {
+                  // inSolidRange(keyPressed);
                     zombie.position.x += 2;
                 // } else {
                   if(!humanHit && opponentHit) {
@@ -348,10 +359,11 @@
                     console.log('score is ' + score);
                     humanHit = false;
                   }
-                // }
+                }
               }
 
               //Slayer AI
+              if(!atMapLimit(slayer.position.x, slayer.position.z) && alive) {
               if(slayer.position.x > zombie.position.x) {
                 slayer.position.x -= 1;
               } else {
@@ -361,31 +373,38 @@
                 slayer.position.z -= 1;
               } else {
                 slayer.position.z += 1;
+              } 
+              //Game Over
+              if(slayer.position.x <= zombie.position.x && slayer.position.z <= zombie.position.z) {
+                console.log('game over');
+                socket.send({'gameOverSingle': clientid});
+                scene.remove(zombie);
+                alive = false;
+                window.location = 'http://www.google.com'; 
               }
+            }
         }
 
         function inSolidRange(keyPressed) {
 
-          var slayerPosX = slayer.position.x,
-            slayerPosY = slayer.position.z,
-            zombiePosX = zombie.position.x,
-            zombiePosY = zombie.position.z;
+          var zombiePosX = zombie.position.x,
+              zombiePosZ = zombie.position.z;
 
             switch(keyPressed) {
-              case 'W' : return inViolation(zombiePosX, zombiePosY + 2, slayer.position, 'W');
-              case 'S' : return inViolation(zombiePosX,  zombiePosY - 2, slayer.position, 'S');
-              case 'A' : return inViolation(zombiePosX - 2,  zombiePosY, slayer.position, 'A');
-              case 'D' : return inViolation(zombiePosX + 2,  zombiePosY, slayer.position, 'D');
+              case 'W' : return inViolation(zombiePosX, zombiePosZ - 2, slayer.position, 'W');
+              case 'S' : return inViolation(zombiePosX,  zombiePosZ + 2, slayer.position, 'S');
+              case 'A' : return inViolation(zombiePosX - 2,  zombiePosZ, slayer.position, 'A');
+              case 'D' : return inViolation(zombiePosX + 2,  zombiePosZ, slayer.position, 'D');
             }
         };
 
-        function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
+        function inViolation(newPlayerX, newPlayerZ, opponentPos, dir) {
           console.log('Number of humans: ' + humans.length);
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
-              (newPlayerX < humans[i].position.x + 10) && (newPlayerX > humans[i].position.x - 10) && 
-              (newPlayerY < humans[i].position.z + 10) && (newPlayerY > humans[i].position.z - 10)) {
+              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5) && 
+              (newPlayerZ < humans[i].position.z + 5) && (newPlayerZ > humans[i].position.z - 5)) {
               console.log("Violating in X domain.\n");
 
               if(!humans[i].turned) {
@@ -393,11 +412,11 @@
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
               }
-            return true; 
+            // return true; 
 
             } else if (((dir === 'W') || (dir === 'S')) && 
-              (newPlayerY < humans[i].position.z + 10) && (newPlayerY > humans[i].position.z - 10) && 
-              (newPlayerX < humans[i].position.x + 10) && (newPlayerX > humans[i].position.x - 10)) {
+              (newPlayerZ < humans[i].position.z + 7.5) && (newPlayerZ > humans[i].position.z - 7.5) && 
+              (newPlayerX < humans[i].position.x + 7.5) && (newPlayerX > humans[i].position.x - 7.5)) {
               console.log("Violating in Y domain.\n");
 
                 if(!humans[i].turned) {
@@ -405,26 +424,26 @@
                   humans[i].material.color.setHex(0x4B088A);
                   humans[i].turned = true;
                 }
-                return true; 
+                // return true; 
              }
           }
 
           if (((dir === 'A') || (dir === 'D')) && 
-            (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5)) {
+            (newPlayerX < opponentPos.x + 7.5) && (newPlayerX > opponentPos.x - 7.5) && 
+            (newPlayerZ < opponentPos.z + 7.5) && (newPlayerZ > opponentPos.z - 7.5)) {
             console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5) && 
+            (newPlayerZ < opponentPos.z + 5) && (newPlayerZ > opponentPos.z - 5) && 
             (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5)) {
             console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
-          } else if(atMapLimit(newPlayerX, newPlayerY)) {
+          } else if(atMapLimit(newPlayerX, newPlayerZ)) {
                 wallHit = true;
                 return true;
           } else {
