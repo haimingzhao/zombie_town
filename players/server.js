@@ -116,7 +116,7 @@ var io = socket.listen(server);
 
         if('comp' in message) {
             allPlayers++;
-            if(allPlayers%2 === 0) {
+            if(allPlayers%2 === 0 && allPlayers > 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
             }
@@ -204,18 +204,18 @@ var io = socket.listen(server);
             players[otherplayerid].send({'newPosition': message});
         }
         if('slayerOne' in message) {
-            client.send({'newPositionSlayerOne': message});
+            // client.send({'newPositionSlayerOne': message});
             players[otherplayerid].send({'newPositionSlayerOne': message});
         }    
         if('slayerTwo' in message) {
-            client.send({'newPositionSlayerTwo': message});
+            // client.send({'newPositionSlayerTwo': message});
             players[otherplayerid].send({'newPositionSlayerTwo': message});
         }
         
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
-            client.status = dead;
+            client.status = 'dead';
             if(players[otherplayerid].status == 'dead') {
                 client.send('menuCol');
             }
