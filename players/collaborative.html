@@ -5,12 +5,13 @@
 		<style>canvas { width: 100%; height: 100% }</style>
 		<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="timer.js"></script>
 		<script src="lib/three.js"></script>
 		<script src="/lib/keyboard.js"></script>
 	</head>
 	
-  <body id="main">
-
+  <body id="body">
     <script src="basic_map/js/TrackballControls.js"></script>
     <script src="basic_map/js/Detector.js"></script>
     <script type="x-shader/x-vertex" id="vertexShader">
@@ -165,6 +166,9 @@
   *********************************************************************************************************************
   *********************************************************************************************************************
   */
+
+
+
         var zombieOne,
             zombieTwo,
             slayerOne,
@@ -183,7 +187,9 @@
             score = 0,
             aliveZombOne = true,
             aliveZombTwo = true,
-            ready = false;
+            ready = false,
+            slayerKillZombieOne = false,
+            slayerKillZombieTwo = false;
             // moveSlayer = false,
 
         // var socket = io.connect();
@@ -260,7 +266,7 @@
         });
 
         socket.on('message', function(obj) {
-          console.log(obj);
+          // console.log(obj);
           if('id' in obj) {
             clientid = obj.id;
           }
@@ -312,7 +318,8 @@
           }
           if('menuCol' in obj) {
             if(clientid === obj.menuCol) {
-            $('#main').fadeOut('slow');
+            $('#body').fadeTo('slow', 0.5);
+            // $('#timer').fadeIn('slow'); 
             // window.location = 'http://www.google.com';
             }
           }
@@ -367,7 +374,7 @@
             if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
-                  console.log('client id = 0'); 
+                  // console.log('client id = 0'); 
                   zombieOne.position.x -= 2;
                 } else {
                   if(!humanHit && opponentHit) {
@@ -385,7 +392,7 @@
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
-                  zombieOne.position.z += 2;
+                  zombieOne.position.z -= 2;
                 } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': clientid});
@@ -402,7 +409,7 @@
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                zombieOne.position.z -= 2;
+                zombieOne.position.z += 2;
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': clientid});
@@ -439,7 +446,7 @@
               socket.send({'collab': ready});
               keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
-                  console.log('client id = 1');
+                  // console.log('client id = 1');
                   zombieTwo.position.x -= 2;
                 } else {
                   if(!humanHit && opponentHit && !otherPlayerHit) {
@@ -458,7 +465,7 @@
               socket.send({'collab': ready});
               keyPressed = 'W';
               if(!inSolidRange(keyPressed)){
-                zombieTwo.position.z += 2;
+                zombieTwo.position.z -= 2;
               } else {
                 if(!humanHit && opponentHit) {
                   socket.send({'gameOverCol': clientid});
@@ -476,7 +483,7 @@
               socket.send({'collab': ready});
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                zombieTwo.position.z -= 2;
+                zombieTwo.position.z += 2;
               } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': clientid});
@@ -512,7 +519,7 @@
 
             //SLAYER ONE
               if(!atMapLimit(slayerOne.position.x, slayerOne.position.z) && ready && aliveZombOne) {
-                console.log(slayerOne.position);
+                // console.log(slayerOne.position);
                if(slayerOne.position.x > zombieOne.position.x) {
                   slayerOne.position.x -= 1;
                 } else {
@@ -524,7 +531,8 @@
                   slayerOne.position.z += 1;
                 } 
                 //Game Over
-                if(slayerOne.position.x === zombieOne.position.x && slayerOne.position.z === zombieOne.position.z) {
+                // if(slayerOne.position.x === zombieOne.position.x && slayerOne.position.z === zombieOne.position.z) {
+                  if(slayerKillZombieOne) {
                   console.log('game over');
                   socket.send({'gameOverCol': clientid});
                   scene.remove(zombieOne);
@@ -545,7 +553,8 @@
                 slayerOne.position.z += 1;
               } 
               // Game Over
-              if(slayerOne.position.x === zombieTwo.position.x && slayerOne.position.z === zombieTwo.position.z) {
+              // if(slayerOne.position.x === zombieTwo.position.x && slayerOne.position.z === zombieTwo.position.z) {
+                if(slayerKillZombieTwo) {
                 console.log('game over');
                 socket.send({'gameOverCol': clientid});
                 scene.remove(zombieTwo);
@@ -567,12 +576,12 @@
                 slayerTwo.position.z += 1;
               } 
               // Game Over
-              if(slayerTwo.position.x === zombieTwo.position.x && slayerTwo.position.z === zombieTwo.position.z) {
-                console.log('game over zombieTwo');
-                socket.send({'gameOverCol': clientid});
-                scene.remove(zombieTwo);
-                aliveZombTwo = false;
-              }
+              // if(slayerTwo.position.x === zombieTwo.position.x && slayerTwo.position.z === zombieTwo.position.z) {
+              //   console.log('game over zombieTwo');
+              //   socket.send({'gameOverCol': clientid});
+              //   scene.remove(zombieTwo);
+              //   aliveZombTwo = false;
+              // }
               socket.send({'slayerTwo': [slayerTwo.position]});
             //   // Other player still alive
             } else if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && ready && !aliveZombTwo && aliveZombOne) {
@@ -587,12 +596,12 @@
                 slayerTwo.position.z += 1;
               } 
               // Game Over
-              if(slayerTwo.position.x === zombieOne.position.x && slayerTwo.position.z === zombieOne.position.z) {
-                console.log('game over');
-                socket.send({'gameOverCol': clientid});
-                scene.remove(zombieOne);
-                aliveZombOne = false;
-              }
+              // if(slayerTwo.position.x === zombieOne.position.x && slayerTwo.position.z === zombieOne.position.z) {
+              //   console.log('game over');
+              //   socket.send({'gameOverCol': clientid});
+              //   scene.remove(zombieOne);
+              //   aliveZombOne = false;
+              // }
               socket.send({'slayerTwo': [slayerTwo.position]});
             }
         }
@@ -608,11 +617,11 @@
 
           if(clienttype === 'z') {
             switch(keyPressed) {
-              case 'W' : return inViolation(zombieOnePosX, zombieOnePosZ + 2,
+              case 'W' : return inViolation(zombieOnePosX, zombieOnePosZ - 2,
                                             zombieTwo.position, 
                                             slayerOnePos,
                                             slayerTwoPos, 'W');
-              case 'S' : return inViolation(zombieOnePosX, zombieOnePosZ - 2, 
+              case 'S' : return inViolation(zombieOnePosX, zombieOnePosZ + 2, 
                                             zombieTwo.position, 
                                             slayerOnePos,                                            
                                             slayerTwoPos, 'S');
@@ -627,19 +636,19 @@
             }
           } else if(clienttype === 's') {
             switch(keyPressed) {
-              case 'W' : return inViolation(zombieTwoPosX, zombieTwoPosZ + 2, 
+              case 'W' : return inViolation(zombieTwoPosX, zombieTwoPosZ - 2, 
                                             zombieOne.position,
                                             slayerOnePos,
                                             slayerTwoPos, 'W');
-              case 'S' : return inViolation(zombieTwoPosX, zombieTwoPosZ - 2, 
+              case 'S' : return inViolation(zombieTwoPosX, zombieTwoPosZ + 2, 
                                             zombieOne.position,
                                             slayerOnePos,
                                             slayerTwoPos, 'S');
-              case 'A' : return inViolation(zombieTwoPosX - 1, zombieTwoPosZ, 
+              case 'A' : return inViolation(zombieTwoPosX - 2, zombieTwoPosZ, 
                                             zombieOne.position,
                                             slayerOnePos,
                                             slayerTwoPos, 'A');
-              case 'D' : return inViolation(zombieTwoPosX + 1, zombieTwoPosZ, 
+              case 'D' : return inViolation(zombieTwoPosX + 2, zombieTwoPosZ, 
                                             zombieOne.position,
                                             slayerOnePos,
                                             slayerTwoPos, 'D');
@@ -647,14 +656,14 @@
           }
         };
 
-        function inViolation(newPlayerX, newPlayerY, otherPlayer, slayerOne, slayerTwo, dir) {
+        function inViolation(newPlayerX, newPlayerZ, otherPlayer, slayerOne, slayerTwo, dir) {
           //inviolation of human
           console.log('Number of humans: ' + humans.length);
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
               (newPlayerX < humans[i].position.x + 2.5) && (newPlayerX > humans[i].position.x - 2.5) && 
-              (newPlayerY < humans[i].position.z + 2.5) && (newPlayerY > humans[i].position.z - 2.5)) {
+              (newPlayerZ < humans[i].position.z + 2.5) && (newPlayerZ > humans[i].position.z - 2.5)) {
               console.log("Violating in X domain.\n");
 
               if(!humans[i].turned) {
@@ -663,10 +672,10 @@
                 humans[i].turned = true;
                 socket.send({'humanHit': i});;
               }
-              return true; 
+              // return true; 
             //inviolation of other player
             } else if (((dir === 'W') || (dir === 'S')) && 
-              (newPlayerY < humans[i].position.z + 2.5) && (newPlayerY > humans[i].position.z - 2.5) && 
+              (newPlayerZ < humans[i].position.z + 2.5) && (newPlayerZ > humans[i].position.z - 2.5) && 
               (newPlayerX < humans[i].position.x + 2.5) && (newPlayerX > humans[i].position.x - 2.5)) {
               console.log("Violating in Y domain.\n");
 
@@ -676,19 +685,19 @@
                   humans[i].turned = true;
                   socket.send({'humanHit': i});
                 }
-                return true; 
+                // return true; 
             }
           }
           //inviolation of other player
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5) && 
-            (newPlayerY < otherPlayer.z + 2.5) && (newPlayerY > otherPlayer.z - 2.5)) {
+            (newPlayerZ < otherPlayer.z + 2.5) && (newPlayerZ > otherPlayer.z - 2.5)) {
             console.log("Violating in X domain.\n");
             otherPlayerHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < otherPlayer.z + 2.5) && (newPlayerY > otherPlayer.z - 2.5) && 
+            (newPlayerZ < otherPlayer.z + 2.5) && (newPlayerZ > otherPlayer.z - 2.5) && 
             (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5)) {
             console.log("Violating in Y domain.\n");
             otherPlayerHit = true;
@@ -698,14 +707,14 @@
           //involation of slayerOne
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5) && 
-            (newPlayerY < slayerOne.z + 2.5) && (newPlayerY > slayerOne.z - 2.5)) {
+            (newPlayerZ < slayerOne.z + 2.5) && (newPlayerZ > slayerOne.z - 2.5)) {
             console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < slayerOne.z + 2.5) && (newPlayerY > slayerOne.z - 2.5) && 
+            (newPlayerZ < slayerOne.z + 2.5) && (newPlayerZ > slayerOne.z - 2.5) && 
             (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5)) {
             console.log("Violating in Y domain.\n");
 
@@ -715,24 +724,30 @@
           //involation of slayerTwo
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5) && 
-            (newPlayerY < slayerTwo.z + 2.5) && (newPlayerY > slayerTwo.z - 2.5)) {
+            (newPlayerZ < slayerTwo.z + 2.5) && (newPlayerZ > slayerTwo.z - 2.5)) {
             console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
 
           }if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < slayerTwo.z + 2.5) && (newPlayerY > slayerTwo.z - 2.5) && 
+            (newPlayerZ < slayerTwo.z + 2.5) && (newPlayerZ > slayerTwo.z - 2.5) && 
             (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5)) {
             console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
 
-          }if(atMapLimit(newPlayerX, newPlayerY)) {
+          }if(atMapLimit(newPlayerX, newPlayerZ)) {
             wallHit = true;
             return true;
-          } else {
+          } if((slayerOne.x === newPlayerX && slayerOne.z === newPlayerZ) /*|| (slayerTwo.x === newPlayerX && slayerTwo.z === newPlayerZ)*/) {
+            console.log('slayerKillZombieOne');
+            slayerKillZombieOne = true;
+          } if((slayerOne.x === otherPlayer.x && slayerOne.z === otherPlayer.z) || (slayerTwo.x === otherPlayer.x && slayerTwo.z === otherPlayer.z)) {
+            console.log('slayerKillZombieTwo');
+            slayerKillZombieTwo = true;
+          }  else {
             console.log("Not violating.\n"); 
             return false; 
           }
@@ -743,8 +758,10 @@
         }
 
         function timer() {
+          if(ready) {
           count -= 1;
-          if(count <= 0) {
+          }
+          if(count < 0) {
             clearInterval(count);
             return;
           } 
@@ -765,7 +782,9 @@
       }
 
     </script>
-    <span id="timer"></span>
-    <span id="score"></span>
+    <div style="background-color:green;">
+      <div id="timer" style="width:100%; height:100%; position:absolute; top:0; left:0;"></div>
+      <div id="score"></div>
+    </div>
 	</body>
 </html>

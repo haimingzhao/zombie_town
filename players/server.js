@@ -200,14 +200,14 @@ var io = socket.listen(server);
         if('zombieTwo' in message) {
             players[otherplayerid].send({'newPosition': message});
         }
-        if('slayerOne' in message) {
-            // client.send({'newPositionSlayerOne': message});
-            players[otherplayerid].send({'newPositionSlayerOne': message});
-        }    
-        if('slayerTwo' in message) {
-            // client.send({'newPositionSlayerTwo': message});
-            players[otherplayerid].send({'newPositionSlayerTwo': message});
-        }
+        // if('slayerOne' in message) {
+        //     // client.send({'newPositionSlayerOne': message});
+        //     players[otherplayerid].send({'newPositionSlayerOne': message});
+        // }    
+        // if('slayerTwo' in message) {
+        //     // client.send({'newPositionSlayerTwo': message});
+        //     players[otherplayerid].send({'newPositionSlayerTwo': message});
+        // }
         
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
@@ -223,7 +223,7 @@ var io = socket.listen(server);
             if(players[otherplayerid].status === players[otherplayerid].id) {
             console.log('AFTER client status is ' + client.status + ' with client id: ' + client.id);
             console.log('AFTER other client status is ' + players[otherplayerid].status + ' with client id: ' + players[otherplayerid].id);
-                client.send({'menuCol': client.id});
+                // client.send({'menuCol': client.id});
                 players[otherplayerid].send({'menuCol': client.id});
             }
         }
@@ -272,7 +272,7 @@ var io = socket.listen(server);
         // players.splice(client.id, client.id);
         // console.log(players);
         // if(client.id === 0) {
-            
+
         //     players[otherplayerid].send({'playerDisconnect': client.id});
         // }
         // if(client.id === 1) {
@@ -311,6 +311,5 @@ var io = socket.listen(server);
                 console.log(-initZ);
                 return [-initX, -initZ];
         }
-        // return [initX, initZ];
     }
 });
