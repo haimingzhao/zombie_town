@@ -68,6 +68,8 @@ var io = socket.listen(server);
 
     client.on('addUser', function() {
         console.log('addUser');
+        client.id = players.length;
+        client.send({id: client.id});
     players.push(client);
 
     if(players.length%2 === 0) {
@@ -91,7 +93,7 @@ var io = socket.listen(server);
     client.send({room: client.room});
     });
 
-    client.status = 'alive';
+    client.status = -1;
 
     // var i;
     // for(i = 0; i < humans.length; i++) {
@@ -171,11 +173,10 @@ var io = socket.listen(server);
     //Collaborative mode
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
-        // console.log(JSON.stringify(otherplayerid)); 
 
         if('collab' in message) {
             allPlayers++;
-            if(allPlayers%2 === 0) {
+            if(players.length%2 === 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
             }
@@ -189,10 +190,6 @@ var io = socket.listen(server);
                 client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
                 players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
             }  
-        }
-
-        if('move' in message) {
-            players[otherplayerid].send({'readyOther': players[otherplayerid].id});
         }
 
         //Send movements to other player
@@ -215,9 +212,19 @@ var io = socket.listen(server);
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
-            client.status = 'dead';
-            if(players[otherplayerid].status == 'dead') {
-                client.send('menuCol');
+            if(client.status === 1) {
+                console.log('whhhhhy????');
+            } else {
+                console.log('normal');
+            }
+            console.log('BEFORE client status is ' + client.status + ' with client id: ' + client.id);
+            console.log('BEFORE other client status is ' + players[otherplayerid].status + ' with client id: ' + players[otherplayerid].id);
+            client.status = message.gameOverCol;
+            if(players[otherplayerid].status === players[otherplayerid].id) {
+            console.log('AFTER client status is ' + client.status + ' with client id: ' + client.id);
+            console.log('AFTER other client status is ' + players[otherplayerid].status + ' with client id: ' + players[otherplayerid].id);
+                client.send({'menuCol': client.id});
+                players[otherplayerid].send({'menuCol': client.id});
             }
         }
         
@@ -261,16 +268,17 @@ var io = socket.listen(server);
 //**************************************************************************************************************
 
     client.on('disconnect', function() {
-        var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1; 
-        players.splice(client.id, client.id);
-        console.log(players);
-        if(client.id === 0) {
-            players[otherplayerid].send({'playerDisconnect': client.id});
-        }
-        if(client.id === 1) {
-            players[otherplayerid].send({'playerDisconnect': client.id});
-        }
-        players.splice(otherplayerid, otherplayerid);
+        // var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1; 
+        // players.splice(client.id, client.id);
+        // console.log(players);
+        // if(client.id === 0) {
+            
+        //     players[otherplayerid].send({'playerDisconnect': client.id});
+        // }
+        // if(client.id === 1) {
+        //     players[otherplayerid].send({'playerDisconnect': client.id});
+        // }
+        // players.splice(otherplayerid, otherplayerid);
     });
 
     function respawn() {
