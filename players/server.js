@@ -91,6 +91,8 @@ var io = socket.listen(server);
     client.send({room: client.room});
     });
 
+    client.status = 'alive';
+
     // var i;
     // for(i = 0; i < humans.length; i++) {
     //     console.log(spawnHuman());
@@ -106,10 +108,11 @@ var io = socket.listen(server);
     //     players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
     // }
 
+//**************************************************************************************************************
+
     //competitive mode
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
-        console.log(JSON.stringify(otherplayerid));
 
         if('comp' in message) {
             allPlayers++;
@@ -163,6 +166,8 @@ var io = socket.listen(server);
         }
     });
 
+//**************************************************************************************************************
+
     //Collaborative mode
     client.on('message',function(message) {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
@@ -186,21 +191,34 @@ var io = socket.listen(server);
             }  
         }
 
+        if('move' in message) {
+            players[otherplayerid].send({'readyOther': players[otherplayerid].id});
+        }
+
         //Send movements to other player
         if('zombieOne' in message) {
             console.log('zombie in room ' + client.room + JSON.stringify(message));
             players[otherplayerid].send({'newPosition': message});
-        } else if('zombieTwo' in message) {
+        } 
+        if('zombieTwo' in message) {
             players[otherplayerid].send({'newPosition': message});
-        }else if('slayer' in message){
-            console.log('slayer in room ' + client.room + JSON.stringify(message));
-            client.send({'newPosition': message});
-            players[otherplayerid].send({'newPosition': message});
+        }
+        if('slayerOne' in message) {
+            client.send({'newPositionSlayerOne': message});
+            players[otherplayerid].send({'newPositionSlayerOne': message});
         }    
+        if('slayerTwo' in message) {
+            client.send({'newPositionSlayerTwo': message});
+            players[otherplayerid].send({'newPositionSlayerTwo': message});
+        }
         
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
+            client.status = dead;
+            if(players[otherplayerid].status == 'dead') {
+                client.send('menuCol');
+            }
         }
         
         //Send cumulative score to both players
@@ -215,6 +233,8 @@ var io = socket.listen(server);
             players[otherplayerid].send({'humanTurned': message.humanHit});
         }
     });
+
+//**************************************************************************************************************
 
     //Single Player
     //Don't need to send anything besides logging in high score. Don't need to add to array of players
@@ -237,7 +257,8 @@ var io = socket.listen(server);
                 var humanPos = spawnHuman();
                 client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
             }  
-    })
+    });
+//**************************************************************************************************************
 
     client.on('disconnect', function() {
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1; 

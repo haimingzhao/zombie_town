@@ -181,8 +181,10 @@
             wallHit = false, 
             count = 120,
             score = 0,
-            alive = true,
-            ready = false; 
+            aliveZombOne = true,
+            aliveZombTwo = true,
+            ready = false,
+            move = false; 
 
         // var socket = io.connect();
 
@@ -206,16 +208,16 @@
           var geometry = new THREE.CubeGeometry(5, 5, 5);
           var material = new THREE.MeshBasicMaterial({color: 0xf9CBA7F});
           slayerOne = new THREE.Mesh(geometry, material);
-          slayerOne.position.x = 30;
-          slayerOne.position.z = 30;
+          slayerOne.position.x = 200;
+          slayerOne.position.z = 200;
           slayerOne.position.y = 2.5;
           scene.add(slayerOne);
 
           var geometry = new THREE.CubeGeometry(5, 5, 5);
-          var material = new THREE.MeshBasicMaterial({color: 0xFF1CAE});
+          var material = new THREE.MeshBasicMaterial({color: 0xFFB4d9});
           slayerTwo = new THREE.Mesh(geometry, material);
-          slayerTwo.position.x = 40;
-          slayerTwo.position.z = 40;
+          slayerTwo.position.x = -200;
+          slayerTwo.position.z = -200;
           slayerTwo.position.y = 2.5;
           scene.add(slayerTwo);
 
@@ -267,16 +269,27 @@
             room = obj.room;
           }
           if('newPosition' in obj) {
-            //The client is zombieOne - want zombie 2 location
             if('zombieTwo' in obj.newPosition) {
+              console.log(JSON.stringify(obj));
               zombieTwo.position.x = obj.newPosition.zombieTwo[0].x;
               zombieTwo.position.z = obj.newPosition.zombieTwo[0].z;
-            } else { 
+            } 
+            if ('zombieOne' in obj.newPosition) { 
+              console.log(JSON.stringify(obj));
               zombieOne.position.x = obj.newPosition.zombieOne[0].x;
               zombieOne.position.z = obj.newPosition.zombieOne[0].z;
             }
-            //Give both slayer positions
-
+          }
+          if('newPositionSlayerOne' in obj) {
+            console.log(JSON.stringify(obj));
+              slayerOne.position.x = obj.newPositionSlayerOne.slayerOne[0].x;
+              slayerOne.position.z = obj.newPositionSlayerOne.slayerOne[0].z;
+            
+          if ('newPositionSlayerTwo' in obj) {
+            console.log(JSON.stringify(obj));
+              slayerTwo.position.x = obj.newPositionSlayerTwo.slayerTwo[0].x;
+              slayerTwo.position.z = obj.newPositionSlayerTwo.slayerTwo[0].z;
+            }
           }
           if('type' in obj) {
             console.log(JSON.stringify(obj));
@@ -296,13 +309,19 @@
           if('ready' in obj) {
             ready = true;
           }
+          if('readyOther' in obj) {
+            move = true;
+          }
           if('remove' in obj) {
             console.log('removed ' + obj.remove);
-            if(obj.remove === 'z') {
-              scene.remove(zombieOne);
-            } else {
-              scene.remove(zombieTwo);
-            }
+            // if(obj.remove === 'z') {
+            //   scene.remove(zombieOne);
+            // } else {
+            //   scene.remove(zombieTwo);
+            // }
+          }
+          if('menuCol' in obj) {
+            $('#main').fadeOut('slow');
           }
           if('playerDisconnect' in obj) {
             ready = false;
@@ -353,9 +372,10 @@
           } 
           if(ready) {
 
-          if (clienttype === 'z') {   
-            if(alive) {
+          if (clienttype === 'z' && aliveZombOne) {   
+            if(aliveZombOne) {
             if(Key.isDown(Key.A)) {
+                // move = true;
                 keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
                   console.log('client id = 0'); 
@@ -364,7 +384,7 @@
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
-                    alive = false;
+                    aliveZombOne = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -376,12 +396,13 @@
             if(Key.isDown(Key.W)) {
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
+                  // move = true;
                   zombieOne.position.z += 2;
                 } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
-                    alive = false;
+                    aliveZombOne = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit){
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -393,12 +414,13 @@
             if(Key.isDown(Key.S)) {
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
+                // move = true;
                 zombieOne.position.z -= 2;
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
-                    alive = false;
+                    aliveZombOne = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -410,12 +432,13 @@
               if(Key.isDown(Key.D)) {
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
+                  // move = true;
                     zombieOne.position.x += 2;
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieOne);
-                    alive = false;
+                    aliveZombOne = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -426,9 +449,11 @@
               }
             }
 
-          } else if(clienttype === 's') {  
-          if(alive) {     
+          } else if(clienttype === 's' && aliveZombTwo) {  
+          if(aliveZombTwo) {     
             if(Key.isDown(Key.A)) {
+              move = true;
+              socket.send({'move': clienttype});
               keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
                   console.log('client id = 1');
@@ -437,7 +462,7 @@
                   if(!humanHit && opponentHit && !otherPlayerHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieTwo);
-                    alive = false;
+                    aliveZombTwo = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -447,6 +472,8 @@
                 socket.send({'zombieTwo': [zombieTwo.position]});
             }
             if(Key.isDown(Key.W)) {
+              move = true;
+              socket.send({'move': clienttype});
               keyPressed = 'W';
               if(!inSolidRange(keyPressed)){
                 zombieTwo.position.z += 2;
@@ -454,7 +481,7 @@
                 if(!humanHit && opponentHit) {
                   socket.send({'gameOverCol': [clienttype]});
                   scene.remove(zombieTwo);
-                  alive = false;
+                  aliveZombTwo = false;
                 } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
                   socket.send({'scoreCol': 1});
@@ -464,6 +491,8 @@
               socket.send({'zombieTwo': [zombieTwo.position]});
             }
             if(Key.isDown(Key.S)) {
+              move = true;
+              socket.send({'move': clienttype});
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
                 zombieTwo.position.z -= 2;
@@ -471,7 +500,7 @@
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverCol': [clienttype]});
                     scene.remove(zombieTwo);
-                    alive = false;
+                    aliveZombTwo = false;
                   } else if(!wallHit && !otherPlayerHit && humanHit) {
                     score += 1;
                     socket.send({'scoreCol': 1});
@@ -481,6 +510,8 @@
               socket.send({'zombieTwo': [zombieTwo.position]});
             }
             if(Key.isDown(Key.D)) {
+              move = true;
+              socket.send({'move': clienttype});
               keyPressed = 'D';
               if(!inSolidRange(keyPressed)){
                 zombieTwo.position.x += 2;
@@ -488,7 +519,7 @@
                 if(!humanHit && opponentHit) {
                   socket.send({'gameOverCol': [clienttype]});
                   scene.remove(zombieTwo);
-                  alive = false;
+                  aliveZombTwo = false;
                 } else if(!wallHit && !otherPlayerHit && humanHit) {
                   score += 1;
                   socket.send({'scoreCol': 1});
@@ -500,6 +531,94 @@
           }
         }
       }
+            //Slayer AI
+
+            if(move) {
+              socket.send({'slayerOne': [slayerOne.position]});
+              socket.send({'slayerTwo': [slayerTwo.position]});
+            }
+              if(!atMapLimit(slayerOne.position.x, slayerOne.position.z) && move && aliveZombOne) {
+              if(slayerOne.position.x > zombieOne.position.x) {
+                slayerOne.position.x -= 1;
+              } else {
+                slayerOne.position.x += 1;
+              }
+              if(slayerOne.position.z > zombieOne.position.z) {
+                slayerOne.position.z -= 1;
+              } else {
+                slayerOne.position.z += 1;
+              } 
+              //Game Over
+              if(slayerOne.position.x === zombieOne.position.x && slayerOne.position.z === zombieOne.position.z) {
+                console.log('game over');
+                scene.remove(zombieOne);
+                socket.send({'gameOverCol' : clientid});
+                aliveZombOne = false;
+              }
+              socket.send({'slayerOne': [slayerOne.position]});
+              //Other player is still alive
+             } if(!atMapLimit(slayerOne.position.x, slayerOne.position.z) && move && !aliveZombOne && aliveZombTwo) {
+              if(slayerOne.position.x > zombieTwo.position.x) {
+                slayerOne.position.x -= 1;
+              } else {
+                slayerTwo.position.x += 1;
+              }
+              if(slayerOne.position.z > zombieTwo.position.z) {
+                slayerOne.position.z -= 1;
+              } else {
+                slayerOne.position.z += 1;
+              } 
+              // Game Over
+              if(slayerOne.position.x === zombieTwo.position.x && slayerOne.position.z === zombieTwo.position.z) {
+                console.log('game over');
+                scene.remove(zombieTwo);
+                socket.send({'gameOverCol' : clientid});
+                move = false;
+                aliveZombTwo = false;
+              }
+              socket.send({'slayerOne': [slayerOne.position]});
+            }
+
+            if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && move && aliveZombTwo) {
+              if(slayerTwo.position.x > zombieTwo.position.x) {
+                slayerTwo.position.x -= 1;
+              } else {
+                slayerTwo.position.x += 1;
+              }
+              if(slayerTwo.position.z > zombieTwo.position.z) {
+                slayerTwo.position.z -= 1;
+              } else {
+                slayerTwo.position.z += 1;
+              } 
+              //Game Over
+              if(slayerTwo.position.x === zombieTwo.position.x && slayerTwo.position.z === zombieTwo.position.z) {
+                console.log('game over');
+                scene.remove(zombieTwo);
+                socket.send({'gameOverCol' : clientid});
+                aliveZombTwo = false;
+              }
+              socket.send({'slayerTwo': [slayerTwo.position]});
+              //Other player still alive
+            } /*else if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && move && !aliveZombTwo) {
+              if(slayerTwo.position.x > zombieOne.position.x) {
+                slayerTwo.position.x -= 1;
+              } else {
+                slayerTwo.position.x += 1;
+              }
+              if(slayerTwo.position.z > zombieOne.position.z) {
+                slayerTwo.position.z -= 1;
+              } else {
+                slayerOne.position.z += 1;
+              } 
+              //Game Over
+              if(slayerTwo.position.x <= zombieOne.position.x && slayerTwo.position.z <= zombieOne.position.z) {
+                console.log('game over');
+                scene.remove(zombieOne);
+                socket.send({'gameOverCol' : clientid});
+                move = false;
+              }
+              socket.send({'slayerTwo': [slayerTwo.position]});
+            }*/
         }
 
         function inSolidRange(keyPressed) {
@@ -634,13 +753,17 @@
             opponentHit = true;
             return true; 
 
-          }if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
+          }if(atMapLimit(newPlayerX, newPlayerY)) {
             wallHit = true;
             return true;
           } else {
             console.log("Not violating.\n"); 
             return false; 
           }
+        }
+
+        function atMapLimit(characterPosX, characterPosZ) {
+          return characterPosX === 296 || characterPosX === -296 || characterPosZ === 296 || characterPosZ === -296;
         }
 
         function timer() {
