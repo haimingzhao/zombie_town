@@ -555,7 +555,7 @@
                 socket.send({'gameOverCol' : clientid});
                 aliveZombOne = false;
               }
-              socket.send({'slayerOne': [slayerOne.position]});
+              // socket.send({'slayerOne': [slayerOne.position]});
               //Other player is still alive
              } if(!atMapLimit(slayerOne.position.x, slayerOne.position.z) && move && !aliveZombOne && aliveZombTwo) {
               if(slayerOne.position.x > zombieTwo.position.x) {
@@ -576,7 +576,7 @@
                 move = false;
                 aliveZombTwo = false;
               }
-              socket.send({'slayerOne': [slayerOne.position]});
+              // socket.send({'slayerOne': [slayerOne.position]});
             }
 
             if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && move && aliveZombTwo) {
@@ -597,9 +597,9 @@
                 socket.send({'gameOverCol' : clientid});
                 aliveZombTwo = false;
               }
-              socket.send({'slayerTwo': [slayerTwo.position]});
+              // socket.send({'slayerTwo': [slayerTwo.position]});
               //Other player still alive
-            } /*else if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && move && !aliveZombTwo) {
+            } else if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && move && !aliveZombTwo && aliveZombOne) {
               if(slayerTwo.position.x > zombieOne.position.x) {
                 slayerTwo.position.x -= 1;
               } else {
@@ -617,8 +617,8 @@
                 socket.send({'gameOverCol' : clientid});
                 move = false;
               }
-              socket.send({'slayerTwo': [slayerTwo.position]});
-            }*/
+              // socket.send({'slayerTwo': [slayerTwo.position]});
+            }
         }
 
         function inSolidRange(keyPressed) {
