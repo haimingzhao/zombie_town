@@ -28,44 +28,6 @@ var io = socket.listen(server);
 
     io.sockets.on('connection', function(client) {
 
-    //     client.on('addUser', function() {
-    //         console.log('adduser');
-    //         client.id = players.length;
-    //         players.push(client);
-
-    //         if(players.length%2 === 0) {
-    //             players[players.length-1].type = 's'; 
-    //         } else {
-    //             players[players.length-1].type = 'z'; 
-    //         }
-
-    //         players[players.length-1].id = players.length-1; 
-    //         // console.log(JSON.stringify(players[players.length-1].type));
-
-    //         client.send({'type': client.type});
-    //         // console.log({'type': client.type});
-
-    //         if(client.id%2 === 0) {
-    //             console.log('client id: ' + client.id);
-    //             console.log('we are the: ' + client.type);
-    //             client.room = 'room' + (Math.floor(client.id/2)).toString();
-    //             rooms.push(client.room);
-    //             client.join(client.room);
-    //         } else {
-    //             console.log('client id: ' + client.id);
-    //             console.log('we are the: ' + client.type);
-    //             client.room = 'room' + (Math.floor(client.id/2)).toString();
-    //             client.join(client.room)
-    //         }
-
-    //         console.log('we are in room: ' + client.room);
-    //         client.join('room' + (Math.floor(client.id/2)).toString());
-    //         client.send({room: client.room});
-
-    //         console.log('rooms active: ' + JSON.stringify(rooms));
-    //         console.log('players active: ' + players.length);
-    // });
-
     client.on('addUser', function() {
         console.log('addUser');
         client.id = players.length;
@@ -95,21 +57,6 @@ var io = socket.listen(server);
 
     client.status = -1;
 
-    // var i;
-    // for(i = 0; i < humans.length; i++) {
-    //     console.log(spawnHuman());
-    //     humans[i].id = spawnHuman();
-    //     console.log(humans[i].id);
-    // }
-    // client.send({'humans': humans});
-    // var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
-    // var i;
-    // for(i = 0; i < humans.length; i++) {
-    //     var humanPos = spawnHuman();
-    //     client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
-    //     players[otherplayerid].send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
-    // }
-
 //**************************************************************************************************************
 
     //competitive mode
@@ -132,18 +79,6 @@ var io = socket.listen(server);
             console.log('slayer in room ' + client.room + JSON.stringify(message));
             players[otherplayerid].send({'newPosition': message});
         }
-        // console.log(JSON.stringify(message));
-
-        // if('zombie' in message) {
-        //     console.log('zombie in room ' + client.room + JSON.stringify(message));
-        //     io.sockets.in(client.room).emit({'newPosition': message});
-        //     console.log('in room: ' + client.room);
-
-        // } else if('slayer' in message){
-        //     console.log('slayer in room ' + client.room + JSON.stringify(message));
-        //     io.sockets.in(client.room).emit({'newPosition': message});
-        //     console.log('in room: ' + client.room);
-        // }
         
         if('switch' in message) {
             console.log('switch!!!');
@@ -200,14 +135,6 @@ var io = socket.listen(server);
         if('zombieTwo' in message) {
             players[otherplayerid].send({'newPosition': message});
         }
-        // if('slayerOne' in message) {
-        //     // client.send({'newPositionSlayerOne': message});
-        //     players[otherplayerid].send({'newPositionSlayerOne': message});
-        // }    
-        // if('slayerTwo' in message) {
-        //     // client.send({'newPositionSlayerTwo': message});
-        //     players[otherplayerid].send({'newPositionSlayerTwo': message});
-        // }
         
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
