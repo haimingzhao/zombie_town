@@ -326,14 +326,31 @@
         }
 
         function movement() {
-          // timerTicks++; 
+          timerTicks++; 
 
-          // if (timerTicks === 10) {
-          //   humans.forEach(function(human) {
-          //     human.position.x += 1; 
-          //   });
-          //   timerTicks = 0; 
-          // }
+          if (timerTicks === 10) {
+            humans.forEach(function(human) {
+              if(!human.turned && !atMapLimit(human.position.x, human.position.z)) {
+                // human.position.x += 1; 
+                var move = Math.floor((Math.random()*4)+1);
+                switch(move) {
+                  case 1:
+                    human.position.x += 2;
+                    break;
+                  case 2:
+                    human.position.x -= 2;
+                    break;
+                  case 3:
+                    human.position.z += 2;
+                    break;
+                  case 4:
+                    human.position.z -= 2;
+                    break;
+                }
+              }
+            });
+            timerTicks = 0; 
+          } 
           if(ready) {
 
           if (clienttype === 'z') {   

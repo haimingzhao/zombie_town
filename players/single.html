@@ -4,12 +4,13 @@
 		<title>ZombieTown</title>
 		<style>canvas { width: 100%; height: 100% }</style>
 		<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 		<script src="lib/three.js"></script>
 		<script src="/lib/keyboard.js"></script>
 	</head>
 	
-  <body>
+  <body id="main">
 
     <script src="basic_map/js/TrackballControls.js"></script>
     <script src="basic_map/js/Detector.js"></script>
@@ -178,7 +179,7 @@
           wallHit = false, 
           count = 120,
           score = 0,
-          alive = false; 
+          move = false; 
 
         function addCharacters () {
           var geometry = new THREE.CubeGeometry(5, 5, 5);
@@ -284,7 +285,7 @@
             timerTicks = 0; 
           } 
             if(Key.isDown(Key.A)) {
-                        alive = true;
+                        move = true;
 
                 keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
@@ -295,6 +296,7 @@
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});
                     scene.remove(zombie);
+                    move = false;
                   } else if(!wallHit && humanHit) {
                     score += 1;
                     console.log('score is ' + score);
@@ -303,7 +305,7 @@
                 }
             }
             if(Key.isDown(Key.W)) {
-                        alive = true;
+                        move = true;
 
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
@@ -314,6 +316,7 @@
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
                     scene.remove(zombie);
+                    move = false;
                   } else if(!wallHit && humanHit){
                     score += 1;
                     console.log('score is ' + score);
@@ -322,7 +325,7 @@
                 }
             }
             if(Key.isDown(Key.S)) {
-                        alive = true;
+                        move = true;
 
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
@@ -333,7 +336,7 @@
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
                     scene.remove(zombie);
-                    alive = false;
+                    move = false;
                   } else if(!wallHit && humanHit) {
                     score += 1;
                     console.log('score is ' + score);
@@ -342,7 +345,7 @@
                 }
               }
               if(Key.isDown(Key.D)) {
-                          alive = true;
+                          move = true;
 
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
@@ -353,7 +356,7 @@
                     socket.send({'gameOverSingle': [clientid]});
                     socket.send({'scoreSingle': score});                    
                     scene.remove(zombie);
-                    alive = false;
+                    move = false;
                   } else if(!wallHit && humanHit) {
                     score += 1;
                     console.log('score is ' + score);
@@ -363,7 +366,7 @@
               }
 
               //Slayer AI
-              if(!atMapLimit(slayer.position.x, slayer.position.z) && alive) {
+              if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
               if(slayer.position.x > zombie.position.x) {
                 slayer.position.x -= 1;
               } else {
@@ -379,8 +382,9 @@
                 console.log('game over');
                 socket.send({'gameOverSingle': clientid});
                 scene.remove(zombie);
-                alive = false;
-                window.location = 'http://www.google.com'; 
+                move = false;
+                $('#main').fadeOut('slow'); 
+                // window.location = 'http://www.google.com'; 
               }
             }
         }
