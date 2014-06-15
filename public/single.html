@@ -32,8 +32,8 @@
       }
 
       .shadow {
-          -moz-box-shadow: 0px 0px 5px #000;
-          -webkit-box-shadow: 0px 0px 5px #000;
+          /*-moz-box-shadow: 0px 0px 5px #000;*/
+          /*-webkit-box-shadow: 0px 0px 5px #000;*/
           box-shadow: 0px 0px 5px #000;
       }
 
@@ -64,7 +64,7 @@
         cursor:default;
       }
     </style>
-		<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 		<script src="lib/three.js"></script>
 		<script src="js/keyboard.js"></script>
@@ -84,7 +84,7 @@
     <script src="lib/BufferGeometryUtils.js"></script>
     <script src="lib/TrackballControls.js"></script>
 
-    <script type="x-shader/x-vertex" id="vertexShader">
+<!--     <script type="x-shader/x-vertex" id="vertexShader">
       varying vec3 vWorldPosition;
       void main() {
         vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
@@ -104,7 +104,7 @@
         float h = normalize( vWorldPosition + offset ).y;
         gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( h, exponent ), 0.0 ) ), 1.0 );
       }
-    </script>
+    </script> -->
 
     <script>
       if ( !Detector.webgl ) Detector.addGetWebGLMessage();
@@ -117,6 +117,16 @@
       var stats, container, loaded;
       var clock = new THREE.Clock();
       var toLoad = 2;
+
+      // for animation
+      var animOffset    = 0,   // starting frame of animation
+        walking         = false,
+        duration        = 1000, // milliseconds to complete animation
+        keyframes       = 3,   // total number of animation frames
+        interpolation   = duration / keyframes, // milliseconds per frame
+        lastKeyframe    = 0,    // previous keyframe
+        currentKeyframe = 0;
+      var time;
 
       init();
       animate();
@@ -150,16 +160,17 @@
           scene.add( axes );
 
         // Create a renderer and add it to the DOM.
-        renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer = new THREE.WebGLRenderer({preserveDrawingBuffer:true});
+        // renderer = new THREE.WebGLRenderer( {antialias:true} );
         renderer.setSize(WIDTH, HEIGHT);
         renderer.setClearColor(scene.fog.color, 1);
         renderer.domElement.style.position = "relative";
         document.body.appendChild(renderer.domElement);
 
-        renderer.gammaInput = true;
-        renderer.gammaOutput = true;
-        renderer.shadowMapEnabled = true;
-        renderer.shadowMapType = THREE.PCFShadowMap;
+        // renderer.gammaInput = true;
+        // renderer.gammaOutput = true;
+        // renderer.shadowMapEnabled = true;
+        // renderer.shadowMapType = THREE.PCFShadowMap;
 
         // Set load screen
         $( "start" ).addEventListener( 'click', onStartClick, false );
@@ -175,9 +186,6 @@
           for ( var m in result.materials ) count++;
         }
 
-        // Buffer 
-        var geometry = new THREE.BufferGeometry();
-
 
         // Load in the mesh and add it to the scene.
         var loader = new THREE.JSONLoader();
@@ -185,6 +193,9 @@
         loader.callbackProgress = callbackProgress;
         loader.load( "assets/models/map1/map1.js", function(geometry, materials){
           // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
+          // for (var i = 0; i < materials.length; i++){
+          //       materials[i].index0AttributeName = "position";
+          //     }
           var material = new THREE.MeshFaceMaterial( materials );
           mesh = new THREE.Mesh( geometry, material );
           mesh.position.set( 0, 0, 0 );
@@ -310,16 +321,13 @@
           score = 0; 
 
         function addCharacters () {
-        //   var geometry = new THREE.CubeGeometry(5, 5, 5);
-        //   var material = new THREE.MeshBasicMaterial({color: 0x458B00});
-        //   zombie = new THREE.Mesh(geometry, material);
-        //   zombie.position.y = 2.5;
-        //   scene.add(zombie);
 
           var loader = new THREE.JSONLoader();
             loader.load( "assets/models/zombie/zombiefinal.js", function(geometry, materials){
-              var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
-              zombie = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial( materials ) );
+
+              // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
+              geometry.computeMorphNormals();
+              zombie = new THREE.MorphAnimMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
               zombie.position.set( 0, 0, 0 );
               zombie.scale.set(1,1,1);
               // zombie.castShadow = true;
@@ -327,9 +335,14 @@
               camera.lookAt(zombie.position);
               zombie.add(camera);
               loadingFinish();
+
+              mesh.parseAnimations();
+
+              mesh.playAnimation( geometry.firstAnimation, scope.animationFPS );
+              mesh.baseDuration = mesh.duration;
             });
-          
-          var geometry = new THREE.CubeGeometry(5, 5, 5);
+
+          var geometry = new THREE.BoxGeometry(5, 5, 5);
           var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
           slayer = new THREE.Mesh(geometry, material);
           slayer.position.x = 15;
@@ -343,7 +356,7 @@
               var i;
               for(i = 0; i < (obj.humans).length; i++) {
                 humans.push(obj.humans[i]);
-                var geometry = new THREE.CubeGeometry(5, 5, 5);
+                var geometry = new THREE.BoxGeometry(5, 5, 5);
                 var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
                 humans[i] = new THREE.Mesh(geometry, material);
                 humans[i].position.y = 2.5;
@@ -355,7 +368,7 @@
             }
           });
 
-        };
+        }
 
 
         socket.on('connect', function() {
@@ -375,7 +388,7 @@
         });
 
         function movement() {
-
+          walking = false;
           // timerTicks++; 
 
           // if (timerTicks === 10) {
@@ -383,9 +396,10 @@
           //     human.position.x += 1; 
           //   });
           //   timerTicks = 0; 
-          // } 
+          // }
             if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
+                walking = true;
                 if(!inSolidRange(keyPressed)){
                   zombie.position.x -= 2;
                 } else {
@@ -401,6 +415,7 @@
                 }
             }
             if(Key.isDown(Key.W)) {
+              walking = true;
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
                   zombie.position.z += 2;
@@ -417,6 +432,7 @@
                 }
             }
             if(Key.isDown(Key.S)) {
+              walking = true;
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
                 zombie.position.z -= 2;
@@ -434,6 +450,7 @@
                 }
               }
               if(Key.isDown(Key.D)) {
+                walking = true;
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
                     zombie.position.x += 2;
@@ -465,7 +482,7 @@
               case 'A' : return inViolation(zombiePosX - 2,  zombiePosY, slayer.position, 'A');
               case 'D' : return inViolation(zombiePosX + 2,  zombiePosY, slayer.position, 'D');
             }
-        };
+        }
 
         function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
           console.log('Number of humans: ' + humans.length);
@@ -537,12 +554,35 @@
         // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
         requestAnimationFrame(animate);
         
+        // walkingAnimation();
+
         // Render the scene.
         renderer.render(scene, camera);
         cameraControls.update();
         stats.update();
         movement();
 
+      }
+
+      function walkingAnimation(){
+        if ( zombie && walking ) // exists / is loaded 
+          {
+            // Alternate morph targets
+            time = new Date().getTime() % duration;
+            keyframe = Math.floor( time / interpolation ) + animOffset;
+            if ( keyframe != currentKeyframe ) 
+            {
+              zombie.morphTargetInfluences[ lastKeyframe ] = 0;
+              zombie.morphTargetInfluences[ currentKeyframe ] = 1;
+              zombie.morphTargetInfluences[ keyframe ] = 0;
+              lastKeyframe = currentKeyframe;
+              currentKeyframe = keyframe;
+            }
+            zombie.morphTargetInfluences[ keyframe ] = 
+              ( time % interpolation ) / interpolation;
+            zombie.morphTargetInfluences[ lastKeyframe ] = 
+              1 - zombie.morphTargetInfluences[ keyframe ];
+          }
       }
 
     </script>
