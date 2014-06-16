@@ -10,6 +10,8 @@
 		<script src="lib/three.js"></script>
 		<script src="/lib/keyboard.js"></script>
     <link rel="stylesheet" type="text/css" href="zombiestyle.css">
+    <audio id="loop_1" preload autoplay>
+      <source src="ZombieTrack.mp3"></audio>
 	</head>
 	
   <body id="body">
@@ -188,8 +190,6 @@
             aliveZombOne = true,
             aliveZombTwo = true,
             ready = false,
-            slayerKillZombieOne = false,
-            slayerKillZombieTwo = false,
             username,
             otherUsername;
 
@@ -230,11 +230,10 @@
 
           socket.on('message', function(obj) {
             if('humanPos' in obj) {
-              console.log(JSON.stringify(obj));
               humans.push(obj.humanName);
-                var geometry = new THREE.CubeGeometry(5, 5, 5);
-                var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-                humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
+              var geometry = new THREE.CubeGeometry(5, 5, 5);
+              var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+              humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
               humans[obj.humanIndex].position.x = obj.humanPos[0];
               humans[obj.humanIndex].position.z = obj.humanPos[1];
               humans[obj.humanIndex].position.y = 2.5;
@@ -260,23 +259,19 @@
           }
           if('newPosition' in obj) {
             if('zombieTwo' in obj.newPosition) {
-              console.log(JSON.stringify(obj));
               zombieTwo.position.x = obj.newPosition.zombieTwo[0].x;
               zombieTwo.position.z = obj.newPosition.zombieTwo[0].z;
             } 
             if ('zombieOne' in obj.newPosition) { 
-              console.log(JSON.stringify(obj));
               zombieOne.position.x = obj.newPosition.zombieOne[0].x;
               zombieOne.position.z = obj.newPosition.zombieOne[0].z;
             }
           }
           if('newPositionSlayerOne' in obj) {
-            console.log(JSON.stringify(obj));
               slayerOne.position.x = obj.newPositionSlayerOne.slayerOne[0].x;
               slayerOne.position.z = obj.newPositionSlayerOne.slayerOne[0].z;
             
           if ('newPositionSlayerTwo' in obj) {
-            console.log(JSON.stringify(obj));
               slayerTwo.position.x = obj.newPositionSlayerTwo.slayerTwo[0].x;
               slayerTwo.position.z = obj.newPositionSlayerTwo.slayerTwo[0].z;
             }
@@ -289,7 +284,6 @@
             }
           }
           if('totalScore' in obj) {
-            console.log('other player score is ' + JSON.stringify(obj.totalScore));
             score = obj.totalScore;
             document.getElementById("score").innerHTML="Total Score: \n" + score;
           }
@@ -307,10 +301,10 @@
           }
           if('menuCol' in obj) {
             if(clientid === obj.menuCol) {
-            $('#body').fadeTo('slow', 0.5);
-            gameOverPage();
-            // $('#timer').fadeIn('slow'); 
-            // window.location = 'http://www.google.com';
+              // $('#body').fadeTo('slow', 0.5);
+              // gameOverPage();
+              console.log("FUCK YOU!!!!!!!!!!");
+              // gameOverPage();
             }
           }
           if('playerDisconnect' in obj) {
@@ -359,6 +353,7 @@
             });
             timerTicks = 0; 
           } 
+
           if (clienttype === 'z') {   
             if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
@@ -377,7 +372,7 @@
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
                   zombieOne.position.z -= 2;
-                } else if(!wallHit) {
+                } else {
                   if(opponentHit) {
                     socket.send({'gameOverCol': clientid});
                     scene.remove(zombieOne);
@@ -534,7 +529,7 @@
                 aliveZombTwo = false;
               }
               socket.send({'slayerTwo': [slayerTwo.position]});
-            //   // Other player still alive
+              // Other player still alive
             } else if(!atMapLimit(slayerTwo.position.x, slayerTwo.position.z) && ready && !aliveZombTwo && aliveZombOne) {
               if(slayerTwo.position.x > zombieOne.position.x) {
                 slayerTwo.position.x -= 1;
@@ -624,7 +619,6 @@
                 socket.send({'scoreCol': score});
                 document.getElementById("score").innerHTML="Total Score: \n" + score;
                 socket.send({'humanSpawn' : 0});
-                
                 addHuman();
               }
             //inviolation of other player
@@ -641,7 +635,6 @@
                   socket.send({'scoreCol': score});
                   document.getElementById("score").innerHTML="Total Score: \n" + score;
                   socket.send({'humanSpawn' : 0});
-                
                   addHuman();
                 }
             }
@@ -650,14 +643,12 @@
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5) && 
             (newPlayerZ < otherPlayer.z + 2.5) && (newPlayerZ > otherPlayer.z - 2.5)) {
-            console.log("Violating in X domain.\n");
             otherPlayerHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
             (newPlayerZ < otherPlayer.z + 2.5) && (newPlayerZ > otherPlayer.z - 2.5) && 
             (newPlayerX < otherPlayer.x + 2.5) && (newPlayerX > otherPlayer.x - 2.5)) {
-            console.log("Violating in Y domain.\n");
             otherPlayerHit = true;
             return true; 
           }
@@ -666,16 +657,12 @@
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5) && 
             (newPlayerZ < slayerOne.z + 2.5) && (newPlayerZ > slayerOne.z - 2.5)) {
-            console.log("Violating in X domain.\n");
-
             opponentHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
             (newPlayerZ < slayerOne.z + 2.5) && (newPlayerZ > slayerOne.z - 2.5) && 
             (newPlayerX < slayerOne.x + 2.5) && (newPlayerX > slayerOne.x - 2.5)) {
-            console.log("Violating in Y domain.\n");
-
             opponentHit = true;
             return true; 
           } 
@@ -683,30 +670,23 @@
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5) && 
             (newPlayerZ < slayerTwo.z + 2.5) && (newPlayerZ > slayerTwo.z - 2.5)) {
-            console.log("Violating in X domain.\n");
-
             opponentHit = true;
             return true;
 
           }if (((dir === 'W') || (dir === 'S')) && 
             (newPlayerZ < slayerTwo.z + 2.5) && (newPlayerZ > slayerTwo.z - 2.5) && 
             (newPlayerX < slayerTwo.x + 2.5) && (newPlayerX > slayerTwo.x - 2.5)) {
-            console.log("Violating in Y domain.\n");
-
             opponentHit = true;
             return true; 
 
-          }if(atMapLimit(newPlayerX, newPlayerZ)) {
+          } if(atMapLimit(newPlayerX, newPlayerZ)) {
             wallHit = true;
             return true;
           } if((slayerOne.x === newPlayerX && slayerOne.z === newPlayerZ)) {
-            console.log('slayerKillZombieOne');
             slayerKillZombieOne = true;
           } if((slayerOne.x === otherPlayer.x && slayerOne.z === otherPlayer.z) || (slayerTwo.x === otherPlayer.x && slayerTwo.z === otherPlayer.z)) {
-            console.log('slayerKillZombieTwo');
             slayerKillZombieTwo = true;
-          }  else {
-            console.log("Not violating.\n"); 
+          } else {
             return false; 
           }
         }
@@ -717,7 +697,7 @@
 
         function timer() {
           if(ready) {
-          count -= 1;
+            count -= 1;
           }
           if(count < 0) {
             clearInterval(count);
@@ -727,29 +707,29 @@
           document.getElementById("timer").innerHTML=count + " secs";
         }
 
-                function addHuman() {
+          
+        function addHuman() {
           socket.on('message' , function(obj) {
-
             if('hpos' in obj) {
-          humans.push('h' + (humans.length+1));
-          console.log(humans.length);
-          console.log(humans[humans.length-1]);
-          var geometry = new THREE.CubeGeometry(5, 5, 5);
-          var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-          humans[humans.length-1] = new THREE.Mesh(geometry, material);
-          humans[humans.length-1].position.x = obj.hpos[0];
-          humans[humans.length-1].position.z = obj.hpos[1];
-          humans[humans.length-1].position.y = 2.5;
-          scene.add(humans[humans.length-1]);
+              humans.push('h' + (humans.length+1));
+              console.log(humans.length);
+              console.log(humans[humans.length-1]);
+              var geometry = new THREE.CubeGeometry(5, 5, 5);
+              var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+              humans[humans.length-1] = new THREE.Mesh(geometry, material);
+              humans[humans.length-1].position.x = obj.hpos[0];
+              humans[humans.length-1].position.z = obj.hpos[1];
+              humans[humans.length-1].position.y = 2.5;
+              scene.add(humans[humans.length-1]);
             }
           });
         }
 
-              function gameOverPage() {
-      $('#main').fadeTo('slow', 0); 
-      window.location = 
+      function gameOverPage() {
+        $('#main').fadeTo('slow', 0); 
+        window.location = 
         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + username + "&" + otherUsername + "&" + score;
-    }
+      }
 
       // Renders the scene and updates the render as needed.
       function animate() {

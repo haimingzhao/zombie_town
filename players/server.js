@@ -143,9 +143,10 @@ var io = socket.listen(server);
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
             client.status = message.gameOverCol;
-            if(players[otherplayerid].status === players[otherplayerid].id) {
+            console.log(players[otherplayerid].status);
+            if(players[otherplayerid].status === players[otherplayerid].id && client.status === client.id) {
                 client.send({'menuCol': client.id});
-                players[otherplayerid].send({'menuCol': client.id});
+                // players[otherplayerid].send({'menuCol': players[otherplayerid].id});
             }
         }
         
