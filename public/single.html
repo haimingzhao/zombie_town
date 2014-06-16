@@ -113,20 +113,11 @@
 
       // Set up the scene, camera, and renderer as global variables.
       var scene, camera, renderer;
-      var cameraControls, axis;
+      var cameraControls;
       var stats, container, loaded;
       var clock = new THREE.Clock();
       var toLoad = 3;
 
-      // for animation
-      var animOffset    = 0,   // starting frame of animation
-        walking         = false,
-        duration        = 1000, // milliseconds to complete animation
-        keyframes       = 3,   // total number of animation frames
-        interpolation   = duration / keyframes, // milliseconds per frame
-        lastKeyframe    = 0,    // previous keyframe
-        currentKeyframe = 0;
-      var time;
       var qPI = Math.PI/4;
       var q3PI = (Math.PI)*3/4;
       var hPI = Math.PI/2;
@@ -238,7 +229,7 @@
         container = document.createElement( 'div' );
         document.body.appendChild( container );
         stats = new Stats();
-        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.float = 'right';
         stats.domElement.style.top = '0px';
         stats.domElement.style.zIndex = 100;
         container.appendChild( stats.domElement );
