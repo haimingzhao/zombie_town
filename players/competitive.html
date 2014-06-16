@@ -460,6 +460,7 @@
                 socket.send({'scoreComp': score});
                 document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
                 socket.send({'humanSpawn' : 0});
+                
                 addHuman();
               }
             }else {
@@ -479,6 +480,7 @@
                   socket.send({'scoreComp': score});
                   document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
                   socket.send({'humanSpawn' : 0});
+
                   addHuman();
                 }
                 
