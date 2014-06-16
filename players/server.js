@@ -142,17 +142,8 @@ var io = socket.listen(server);
         if('gameOverCol' in message) {
             console.log('zombieWin!!!');
             players[otherplayerid].send({'remove': client.type}); 
-            if(client.status === 1) {
-                console.log('whhhhhy????');
-            } else {
-                console.log('normal');
-            }
-            console.log('BEFORE client status is ' + client.status + ' with client id: ' + client.id);
-            console.log('BEFORE other client status is ' + players[otherplayerid].status + ' with client id: ' + players[otherplayerid].id);
             client.status = message.gameOverCol;
             if(players[otherplayerid].status === players[otherplayerid].id) {
-            console.log('AFTER client status is ' + client.status + ' with client id: ' + client.id);
-            console.log('AFTER other client status is ' + players[otherplayerid].status + ' with client id: ' + players[otherplayerid].id);
                 // client.send({'menuCol': client.id});
                 players[otherplayerid].send({'menuCol': client.id});
             }
@@ -160,10 +151,10 @@ var io = socket.listen(server);
         
         //Send cumulative score to both players
         if('scoreCol' in message) {
-            client.score += message.scoreCol;
+            client.score = message.scoreCol;
             players[otherplayerid].score = client.score;
             console.log('client ' + client.id + 'score is ' + client.score);
-            players[otherplayerid].send({'totalScore': message.scoreCol}); 
+            players[otherplayerid].send({'totalScore': client.score}); 
         }
         if('humanHit' in message) {
             console.log(humans[message.humanHit] + 'hit');
