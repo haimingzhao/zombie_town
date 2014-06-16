@@ -189,7 +189,11 @@
             aliveZombTwo = true,
             ready = false,
             slayerKillZombieOne = false,
-            slayerKillZombieTwo = false;
+            slayerKillZombieTwo = false,
+            username,
+            otherUsername;
+
+            var username = window.location.href.split("?")[1];
 
         function addCharacters () {
           var geometry = new THREE.CubeGeometry(5, 5, 5);
@@ -296,10 +300,15 @@
           if('ready' in obj) {
             console.log('ready');
             ready = true;
+            socket.send({'clientNav': username});
+          }
+          if('otherUsername' in obj) {
+            otherUsername = obj.otherUsername;
           }
           if('menuCol' in obj) {
             if(clientid === obj.menuCol) {
             $('#body').fadeTo('slow', 0.5);
+            gameOverPage();
             // $('#timer').fadeIn('slow'); 
             // window.location = 'http://www.google.com';
             }
@@ -542,6 +551,7 @@
                 socket.send({'gameOverCol': clientid});
                 scene.remove(zombieOne);
                 aliveZombOne = false;
+
               }
               socket.send({'slayerTwo': [slayerTwo.position]});
             }
@@ -711,6 +721,7 @@
           }
           if(count < 0) {
             clearInterval(count);
+            gameOverPage();
             return;
           } 
           document.getElementById("timer").innerHTML=count + " secs";
@@ -733,6 +744,12 @@
             }
           });
         }
+
+              function gameOverPage() {
+      $('#main').fadeTo('slow', 0); 
+      window.location = 
+        'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + username + "&" + otherUsername + "&" + score;
+    }
 
       // Renders the scene and updates the render as needed.
       function animate() {

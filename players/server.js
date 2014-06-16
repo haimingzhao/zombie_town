@@ -144,7 +144,7 @@ var io = socket.listen(server);
             players[otherplayerid].send({'remove': client.type}); 
             client.status = message.gameOverCol;
             if(players[otherplayerid].status === players[otherplayerid].id) {
-                // client.send({'menuCol': client.id});
+                client.send({'menuCol': client.id});
                 players[otherplayerid].send({'menuCol': client.id});
             }
         }
