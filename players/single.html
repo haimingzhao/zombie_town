@@ -57,7 +57,8 @@
           opponentHit = false, 
           count = 120,
           score = 0,
-          move = false; 
+          move = false,
+          loadingHumans = false; 
 
       init();
       animate();
@@ -202,7 +203,6 @@
 
         socket.on('connect', function() {
           console.log('connect');
-          socket.emit('single');
           document.getElementById("score").innerHTML="Player 1: \n" + score;
         });
 
@@ -284,30 +284,27 @@
                 }
               }
 
-            //   //Slayer AI
-            //   if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
-            //   if(slayer.position.x > zombie.position.x) {
-            //     slayer.position.x -= 1;
-            //   } else {
-            //     slayer.position.x += 1;
-            //   }
-            //   if(slayer.position.z > zombie.position.z) {
-            //     slayer.position.z -= 1;
-            //   } else {
-            //     slayer.position.z += 1;
-            //   } 
-            //   //Game Over
-            //   if(slayer.position.x === zombie.position.x && slayer.position.z === zombie.position.z) {
-            //     console.log('game over');
-            //     socket.send({'gameOverSingle': clientid});
-            //     scene.remove(zombie);
-            //     move = false;
-            //     $('#main').fadeTo('slow', 0); 
-            //     window.location = 
-            //         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/test.php?' + 
-            //         window.location.href.split('?')[1] + '&' + score;
-            //   }
-            // }
+              //Slayer AI
+              if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
+              if(slayer.position.x > zombie.position.x) {
+                slayer.position.x -= 1;
+              } else {
+                slayer.position.x += 1;
+              }
+              if(slayer.position.z > zombie.position.z) {
+                slayer.position.z -= 1;
+              } else {
+                slayer.position.z += 1;
+              } 
+              //Game Over
+              if(slayer.position.x === zombie.position.x && slayer.position.z === zombie.position.z) {
+                console.log('game over');
+                socket.send({'gameOverSingle': clientid});
+                scene.remove(zombie);
+                move = false;
+                gameOverPage();
+              }
+            }
         }
 
         function inSolidRange(keyPressed) {
@@ -337,7 +334,10 @@
                 document.getElementById("score").innerHTML="Player 1: \n" + score;
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
-              }
+              
+                addHuman();
+            }
+
 
             } else if (((dir === 'W') || (dir === 'S')) && 
               (newPlayerZ < humans[i].position.z + 7.5) && (newPlayerZ > humans[i].position.z - 7.5) && 
@@ -349,8 +349,10 @@
                   document.getElementById("score").innerHTML="Player 1: \n" + score;
                   humans[i].material.color.setHex(0x4B088A);
                   humans[i].turned = true;
-                }
+                
+                  addHuman();
              }
+           }
           }
 
           if (((dir === 'A') || (dir === 'D')) && 
@@ -379,25 +381,16 @@
         }
 
         function timer() {
+          if(move) {
           count -= 1;
           if(count <= 0) {
             clearInterval(count);
-            $('#main').fadeTo('slow', 0); 
-            //     window.location = 
-            //         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/test.php?' + 
-            //         window.location.href.split('?')[1] + '&' + score;
+            gameOverPage();
             return;
           } 
           document.getElementById("timer").innerHTML=count + " secs";
         }
-
-        function updateScore() {
-          console.log(score);
-          if(score === humans.length) {
-            socket.emit('Single');
-            addHumans();
-          }
-        }
+      }
 
         function gameOver() {
             socket.send({'scoreSingle': score});                    
@@ -407,26 +400,74 @@
 
         function objectHit(keyPressed) {
           console.log('key pressed ' + keyPressed);
-          if(!humanHit && opponentHit && score < humans.length) {
+          if(opponentHit && score < humans.length) {
               gameOver();
-            }
+            } 
         }
 
         function addHumans() {
-          socket.on('message', function(obj) {
-            if('humanPos' in obj) {
-              console.log(JSON.stringify(obj));
-              humans.push(obj.humanName);
+              console.log('loadHumans');
+              console.log(humans);
+            var i;
+            for(i = 0; i < 10; i++) {
+              var pos = spawnHuman();
+                humans.push('h' + i);
               var geometry = new THREE.CubeGeometry(5, 5, 5);
               var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-              humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
-              humans[obj.humanIndex].position.x = obj.humanPos[0];
-              humans[obj.humanIndex].position.z = obj.humanPos[1];
-              humans[obj.humanIndex].position.y = 2.5;
-              scene.add(humans[obj.humanIndex]);
-            }
-          });
+              humans[i] = new THREE.Mesh(geometry, material);
+              humans[i].position.x = pos[0];
+              humans[i].position.z = pos[1];
+              humans[i].position.y = 2.5;
+              scene.add(humans[i]);
+              console.log(humans);
+            } 
+            loadingHumans = true; 
         }
+
+        function spawnHuman() {
+        var initX = Math.floor((Math.random()*270)+1);
+        var initZ = Math.floor((Math.random()*270)+1);
+
+        var quadrant = Math.floor((Math.random()*4)+1);
+        switch(quadrant) {
+            case 1: 
+                console.log(initX);
+                console.log(initZ);
+                return [initX, initZ];
+            case 2:
+                console.log(-initX);
+                console.log(initZ);
+                return [-initX, initZ];
+            case 3:
+                console.log(initX);
+                console.log(-initZ);
+                return [initX, -initZ];
+            case 4:
+                console.log(-initX);
+                console.log(-initZ);
+                return [-initX, -initZ];
+        }
+    }
+
+    function addHuman() {
+      var pos = spawnHuman();
+      humans.push('h' + humans.length+1);
+      console.log(humans.length);
+      var geometry = new THREE.CubeGeometry(5, 5, 5);
+      var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+      humans[humans.length-1] = new THREE.Mesh(geometry, material);
+      humans[humans.length-1].position.x = pos[0];
+      humans[humans.length-1].position.z = pos[1];
+      humans[humans.length-1].position.y = 2.5;
+      scene.add(humans[humans.length-1]);
+    }
+
+    function gameOverPage() {
+      $('#main').fadeTo('slow', 0); 
+      window.location = 
+        'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + 
+          window.location.href.split('?')[1] + '&' + score;
+    }
 
       // Renders the scene and updates the render as needed.
       function animate() {
