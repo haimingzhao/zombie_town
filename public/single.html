@@ -116,7 +116,7 @@
       var cameraControls, axis;
       var stats, container, loaded;
       var clock = new THREE.Clock();
-      var toLoad = 2;
+      var toLoad = 3;
 
       // for animation
       var animOffset    = 0,   // starting frame of animation
@@ -169,11 +169,6 @@
         renderer.setClearColor(scene.fog.color, 1);
         renderer.domElement.style.position = "relative";
         document.body.appendChild(renderer.domElement);
-
-        // renderer.gammaInput = true;
-        // renderer.gammaOutput = true;
-        // renderer.shadowMapEnabled = true;
-        // renderer.shadowMapType = THREE.PCFShadowMap;
 
         // Set load screen
         $( "start" ).addEventListener( 'click', onStartClick, false );
@@ -328,30 +323,29 @@
           var loader = new THREE.JSONLoader();
             loader.load( "assets/models/zombie/zombiefinal-small.js", function(geometry, materials){
 
-              // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
-              // geometry.computeMorphNormals();
-              // THREE.AnimationHandler.add( geometry.animation );
-              
-              zombie = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
+              var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );           
+              zombie = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial( materials ) );
               // zombie = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
               zombie.position.set( 0, 0, 0 );
               zombie.scale.set(1,1,1);
               // zombie.castShadow = true;
               scene.add(zombie);
               camera.lookAt(zombie.position);
-              camera.add(zombie);
+              zombie.add(camera);
 
               loadingFinish();
             });
 
-          var geometry = new THREE.BoxGeometry(5, 5, 5);
-          var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
-          slayer = new THREE.Mesh(geometry, material);
-          slayer.position.x = 15;
-          slayer.position.z = 15;
-          slayer.position.y = 2.5;
-          scene.add(slayer);
-          // loadingFinish();
+            loader.load( "assets/models/human/human.js", function(geometry, materials){
+
+              var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );      
+              slayer = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
+              slayer.position.set( 20, 0, 20 );
+              slayer.scale.set(1,1,1);
+              scene.add(slayer);
+
+              loadingFinish();
+            }, 'assets/models/human/');
 
           socket.on('message', function(obj) {
             if('humans' in obj) {
@@ -395,49 +389,61 @@
               case 'A' : 
                 if (rot > -qPI && rot <= qPI){
                   character.position.x -= dis;
-                  character.rotation.y = -hPI;
+                  // character.rotation.y = -hPI;
                 }else if (rot > qPI && rot <= q3PI){
                   character.position.z += dis;
-                  character.rotation.y = hPI;
+                  // character.rotation.y = 0;
                 }else if (rot > -q3PI && rot <= -qPI){
                   character.position.z -= dis;
-                  character.rotation.y = hPI;
+                  // character.rotation.y = 2*hPI;
                 }else{
                   character.position.x += dis;
-                  character.rotation.y = hPI;
+                  // character.rotation.y = hPI;
                 }
                 break;
               case 'D' : 
                 if (rot > -qPI && rot <= qPI){
-                  character.position.x += dis;  
+                  character.position.x += dis;
+                  // character.rotation.y = hPI;  
                 }else if (rot > qPI && rot <= q3PI){
                   character.position.z -= dis;
+                  // character.rotation.y = 2*hPI;
                 }else if (rot > -q3PI && rot <= -qPI){
                   character.position.z += dis;
+                  // character.rotation.y = 0;
                 }else{
                   character.position.x -= dis;
+                  // character.rotation.y = -hPI;
                 }
                 break;
               case 'W' :
                 if (rot > -qPI && rot <= qPI){
-                  character.position.z -= dis;  
+                  character.position.z -= dis; 
+                  // character.rotation.y = 2*hPI; 
                 }else if (rot > qPI && rot <= q3PI){
                   character.position.x -= dis;
+                  // character.rotation.y = -hPI;
                 }else if (rot > -q3PI && rot <= -qPI){
                   character.position.x += dis;
+                  // character.rotation.y = hPI;
                 }else{
                   character.position.z += dis;
+                  // character.rotation.y = 0;
                 }
                 break;
               case 'S' :
                 if (rot > -qPI && rot <= qPI){
-                  character.position.z += dis;  
+                  character.position.z += dis;
+                  // character.rotation.y = 0;  
                 }else if (rot > qPI && rot <= q3PI){
                   character.position.x += dis;
+                  // character.rotation.y = hPI;
                 }else if (rot > -q3PI && rot <= -qPI){
                   character.position.x -= dis;
+                  // character.rotation.y = -hPI;
                 }else{
                   character.position.z -= dis;
+                  // character.rotation.y = 2*hPI;
                 }
                 break;
           }
