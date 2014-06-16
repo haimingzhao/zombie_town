@@ -7,6 +7,8 @@
     <script src="/socket.io/socket.io.js"></script>
 		<script src="lib/three.js"></script>
 		<script src="/lib/keyboard.js"></script>
+    <link rel="stylesheet" type="text/css" href="zombiestyle.css">
+
 	</head>
 	
   <body>
@@ -172,14 +174,18 @@
           room,
           keyPressed,
           humans = [],
-          humanHit = false, 
           timerTicks = 0,
           opponentHit = false,
           wallHit = false, 
           switchingInProgress = false,
           count = 120,
           score = 0,
-          ready = false; 
+          ready = false,
+          otherUsername,
+          otherScore = 0,
+          humansLoaded = false; 
+
+          var username = window.location.href.split("?")[1];
 
         function addCharacters () {
           var geometry = new THREE.CubeGeometry(5, 5, 5);
@@ -191,15 +197,14 @@
           var geometry = new THREE.CubeGeometry(5, 5, 5);
           var material = new THREE.MeshBasicMaterial({color: 0xffb4d9});
           slayer = new THREE.Mesh(geometry, material);
-          slayer.position.x = 8;
-          slayer.position.z = 8;
+          slayer.position.x = 20;
+          slayer.position.z = 20;
           slayer.position.y = 2.5;
           scene.add(slayer);
 
           socket.on('message', function(obj) {
 
             if('humanPos' in obj) {
-              console.log(JSON.stringify(obj));
               humans.push(obj.humanName);
               var geometry = new THREE.CubeGeometry(5, 5, 5);
               var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
@@ -209,6 +214,7 @@
               humans[obj.humanIndex].position.y = 2.5;
               scene.add(humans[obj.humanIndex]);
             }
+            humansLoaded = true;
           });
 
         };
@@ -216,29 +222,29 @@
         socket.on('connect', function() {
           console.log('connect');
           socket.emit('addUser');
-          socket.send({'comp': ready})
+          document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
         });
 
         socket.on('message', function(obj) {
           console.log(obj);
           if('room' in obj) {
             room = obj.room;
+                          if(clienttype === 's') {
+              socket.send({'loadHumans': clienttype});
+            }
           }
           if('newPosition' in obj) {
             if ('zombie' in obj.newPosition) {
-              console.log('zombie');
               zombie.position.x = obj.newPosition.zombie[0].x;
               zombie.position.z = obj.newPosition.zombie[0].z;
               switchingInProgress = false; 
             } else if ('slayer' in obj.newPosition){
-              console.log('slayer');
               slayer.position.x = obj.newPosition.slayer[0].x;
               slayer.position.z = obj.newPosition.slayer[0].z;
               switchingInProgress = false; 
             }
           }
           if('type' in obj) {
-            console.log(JSON.stringify(obj));
             clienttype = obj.type;
             addCamera(obj.type); 
             if('respawn' in obj) {
@@ -249,12 +255,12 @@
                 slayer.position.z = obj.slayerRespawn[1];
                 socket.send({'slayer': [slayer.position]});
             }
-              if(clienttype === 's') {
-              socket.send({'loadHumans': clienttype});
-            }
+ 
           }
           if('otherScore' in obj) {
             console.log('other player score is ' + JSON.stringify(obj.otherScore));
+            otherScore = obj.otherScore;
+            document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + otherScore;
           }
           if('humanTurned' in obj) {
             humans[obj.humanTurned].material.color.setHex(0x4B088A);
@@ -262,6 +268,11 @@
           }
           if('ready' in obj) {
             ready = true;
+            socket.send({'clientNav': username});
+          }
+          if('otherUsername' in obj) {
+            otherUsername = obj.otherUsername;
+            document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + otherScore;
           }
           if('playerDisconnect' in obj) {
             console.log(obj.playerDisconnect + 'disconnected');
@@ -314,24 +325,13 @@
             });
             timerTicks = 0; 
           }
-          if(ready) {
-
           if (clienttype === 'z') {   
                 if(Key.isDown(Key.A)) {
                   keyPressed = 'A';
                   if(!inSolidRange(keyPressed)){
-                    console.log('client id = 0'); 
                     zombie.position.x -= 2;
-                    console.log(zombie.position);
                   } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      socket.send({'switch': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'scoreComp': score});
-                    humanHit = false;
-                    }
+                    zombieObjectHit();
                   }
                   socket.send({'zombie': [zombie.position]});
                 }
@@ -339,16 +339,9 @@
                    keyPressed = 'W';
                   if(!inSolidRange(keyPressed)){
                     zombie.position.z -= 2;
-                  } else if(!wallHit) {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      socket.send({'switch': [clienttype]});
-                    } else if(!wallHit){
-                      score += 1;
-                      socket.send({'scoreComp': 1});
-                  humanHit = false;
+                  } else {
+                    zombieObjectHit();
                 }
-                  }
                   socket.send({'zombie': [zombie.position]});
                 }
                 if(Key.isDown(Key.S)) {
@@ -356,14 +349,7 @@
                   if(!inSolidRange(keyPressed)){
                     zombie.position.z += 2;
                   } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      socket.send({'switch': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'scoreComp': 1});
-                  humanHit = false;
-                }
+                  zombieObjectHit();                  
                   }
                   socket.send({'zombie': [zombie.position]});
                 }
@@ -372,23 +358,16 @@
                   if(!inSolidRange(keyPressed)) {
                     zombie.position.x += 2;
                   } else {
-                    if(!humanHit && opponentHit) {
-                      switchingInProgress = true; 
-                      socket.send({'switch': [clienttype]});
-                    } else if(!wallHit) {
-                      score += 1;
-                      socket.send({'scoreComp': 1});
-                      humanHit = false;
-                }
+                    zombieObjectHit();
                   }
                   socket.send({'zombie': [zombie.position]});
                 }
 
           } else if(clienttype === 's') {       
               if(Key.isDown(Key.A)) {
+                socket.send({'comp': ready});
                 keyPressed = 'A';
                   if(!inSolidRange(keyPressed)){
-                    console.log('client id = 1');
                     slayer.position.x -= 2;
                     console.log(slayer.position);
                   } else {
@@ -400,6 +379,7 @@
                   socket.send({'slayer': [slayer.position]});
               }
             if(Key.isDown(Key.W)) {
+              socket.send({'comp': ready});
               keyPressed = 'W';
               if(!inSolidRange(keyPressed)){
                 slayer.position.z -= 2;
@@ -412,6 +392,7 @@
               socket.send({'slayer': [slayer.position]});
             }
             if(Key.isDown(Key.S)) {
+              socket.send({'comp': ready});
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
                 slayer.position.z += 2;
@@ -424,6 +405,7 @@
               socket.send({'slayer': [slayer.position]});
             }
             if(Key.isDown(Key.D)) {
+              socket.send({'comp': ready});
               keyPressed = 'D';
               if(!inSolidRange(keyPressed)){
                 slayer.position.x += 2;
@@ -436,7 +418,6 @@
               socket.send({'slayer': [slayer.position]});
             }
           }
-        }
         };
 
         function inSolidRange(keyPressed) {
@@ -464,37 +445,44 @@
         };
 
         function inViolation(newPlayerX, newPlayerZ, opponentPos, dir) {
-          console.log('Number of humans: ' + humans.length);
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
               (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5) && 
               (newPlayerZ < humans[i].position.z + 5) && (newPlayerZ > humans[i].position.z - 5)) {
-              console.log("Violating in X domain.\n");
 
             if (clienttype === 'z') {
               if(!humans[i].turned) {
-                humanHit = true;
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
-                socket.send({'humanHit': i});;
+                socket.send({'humanHit': i});
+                score++;
+                socket.send({'scoreComp': score});
+                document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
+                addHuman();
               }
-            }
+            }else {
+                document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + score;
+              }
 
             } else if (((dir === 'W') || (dir === 'S')) && 
               (newPlayerZ < humans[i].position.z + 5) && (newPlayerZ > humans[i].position.z - 5) && 
               (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5)) {
-              console.log("Violating in Y domain.\n");
-
               
               if (clienttype === 'z') {
                 if(!humans[i].turned) {
-                  humanHit = true;
                   humans[i].material.color.setHex(0x4B088A);
                   humans[i].turned = true;
                   socket.send({'humanHit': i});
+                  score++;
+                  socket.send({'scoreComp': score});
+                  document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
+
+                  addHuman();
                 }
                 
+              } else {
+                document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + score;
               }
              }
           }
@@ -525,13 +513,29 @@
         }
 
         function timer() {
+          if(ready) {
           count -= 1;
+          }
           if(count <= 0) {
             clearInterval(count);
-            return;
-          } 
+            gameOverPage();
+            return; 
+          }
           document.getElementById("timer").innerHTML=count + " secs";
         }
+
+            function gameOverPage() {
+      $('#main').fadeTo('slow', 0); 
+      window.location = 
+        'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + username + "&" + score + "&" + otherUsername + "&" + otherScore;
+    }
+
+    function zombieObjectHit() {
+      if(opponentHit) {
+        switchingInProgress = true; 
+        socket.send({'switch': [clienttype]});
+      } 
+    }
 
       // Renders the scene and updates the render as needed.
       function animate() {
@@ -549,5 +553,6 @@
     </script>
       <div class="standardtext" id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center; margin-top:10px;"></div>
     <div class="standardtext" id="score" style="width:100%; height:100%; position:absolute; top:0; left=0; margin-top:10px; margin-left:10px"></div>
+    <div class="standardtext" id="otherScore" style="width:100%; height:100%; position:absolute; top:0; right=0; margin-top:35px; margin-left:10px;"></div>
 	</body>
 </html>

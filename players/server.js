@@ -41,8 +41,6 @@ var io = socket.listen(server);
     }
 
     players[players.length-1].id = players.length-1; 
-    // console.log(JSON.stringify(players[players.length-1].type));
-    // console.log(players);
 
     client.send({'type': client.type});
     console.log({'type': client.type});
@@ -64,30 +62,26 @@ var io = socket.listen(server);
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
 
         if('comp' in message) {
-            allPlayers++;
-            if(allPlayers%2 === 0 && allPlayers > 0) {
+            if(players.length%2 === 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
             }
         }
 
         if('zombie' in message) {
-            console.log('zombie in room ' + client.room + JSON.stringify(message));
-
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         } else if('slayer' in message){
-            console.log('slayer in room ' + client.room + JSON.stringify(message));
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         }
         
         if('switch' in message) {
             console.log('switch!!!');
-
             players[client.id].type = players[client.id].type === 'z' ? 's' : 'z'; 
             players[otherplayerid].type = players[otherplayerid].type === 'z' ? 's' : 'z';
             var posOne = respawn();
             var posTwo = respawn();
-            console.log('zombie is at' + posOne + 'slayer is at ' + posTwo);
             client.send({type: players[client.id].type, 'respawn': posOne, 'slayerRespawn': posTwo});
             players[otherplayerid].send({type: players[otherplayerid].type, 'respawn': posOne, 'slayerRespawn': posTwo}); 
         }
@@ -95,11 +89,20 @@ var io = socket.listen(server);
         if('scoreComp' in message) {
             client.score = message.scoreComp;
             console.log('client ' + client.id + 'score is ' + client.score);
-            players[otherplayerid].send({'otherScore': message.scoreComp}); 
+            players[otherplayerid].send({'otherScore': client.score}); 
         }
         if('humanHit' in message) {
             console.log(humans[message.humanHit] + 'hit');
             players[otherplayerid].send({'humanTurned': message.humanHit});
+        }
+        if('clientNav' in message) {
+            client.username = message.clientNav;
+            console.log(client.username);
+        }
+        if('spawnHuman' in message) {
+            var hpos = spawnHuman();
+            client.emit(hpos);
+            players[otherplayerid].send(hpos);
         }
     });
 
@@ -110,7 +113,6 @@ var io = socket.listen(server);
         var otherplayerid = client.id % 2 === 0 ? client.id+1 : client.id-1;  
 
         if('collab' in message) {
-            allPlayers++;
             if(players.length%2 === 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
