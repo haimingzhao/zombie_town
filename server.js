@@ -154,10 +154,11 @@ var io = socket.listen(server);
 
         //Send movements to other player
         if('zombieOne' in message) {
-            console.log('zombie in room ' + client.room + JSON.stringify(message));
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         }
         if('zombieTwo' in message) {
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         }
         
