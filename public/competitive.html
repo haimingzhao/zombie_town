@@ -59,16 +59,6 @@
         return document.getElementById( id );
       }
 
-      function setStats(){
-        container = document.createElement( 'div' );
-        document.body.appendChild( container );
-        stats = new Stats();
-        stats.domElement.style.float = 'right';
-        stats.domElement.style.top = '0px';
-        stats.domElement.style.zIndex = 100;
-        container.appendChild( stats.domElement );
-      }
-
       // Sets up the scene.
       function init() {
 
@@ -89,7 +79,7 @@
         });
 
         // Create a renderer and add it to the DOM.
-        renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer = new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
         renderer.setSize(WIDTH, HEIGHT);
         renderer.setClearColor(scene.fog.color, 1);
         renderer.domElement.style.position = "relative";
@@ -113,8 +103,6 @@
 
         addCharacters(); 
 
-        // Add OrbitControls so that we can pan around with the mouse.
-        // controls = new THREE.OrbitControls(camera, renderer.domElement);
         // CONTROLS
         cameraControls = new THREE.TrackballControls( camera, renderer.domElement );
         var delta = clock.getDelta();
@@ -122,6 +110,63 @@
 
         setInterval(timer, 1000);
 
+      }
+
+      function createLoadScene(WIDTH, HEIGHT) {
+        // Create the scene and set the scene size.
+        scene = new THREE.Scene();
+
+        // Create a camera, zoom it out from the model a bit, and add it to the scene.
+        camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 20000);
+        camera.position.set(0,20,50);
+        scene.add(camera);
+
+        // Lightings
+        setLights();
+      }
+
+      function onStartClick() {
+        $( "progress" ).style.display = "none";
+      }
+
+      function setStats(){
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+        stats = new Stats();
+        stats.domElement.style.float = 'right';
+        stats.domElement.style.top = '0px';
+        stats.domElement.style.zIndex = 100;
+        container.appendChild( stats.domElement );
+      }
+
+      function loadingFinish(){
+        toLoad = toLoad - 1;
+        if(toLoad === 0){
+          $( "loading" ).style.display = "none";
+          $( "progressbar" ).style.display = "none";
+          $( "start" ).style.display = "block";
+          $( "start" ).className = "enabled";
+        }
+      }
+
+      function setLights(){
+        // Fog
+        scene.fog = new THREE.Fog( 0x9999FF, 20, 500);
+
+        // Lightings
+        var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
+          hemiLight.color.setHSL( 0.6, 1, 0.75 );
+          hemiLight.groundColor.setHSL( 0.1, 0.8, 0.7 );
+          hemiLight.position.y = 500;
+          hemiLight.position.x = 400;
+          scene.add( hemiLight );
+        
+        var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI / 2, 1 );
+          light.position.set( 300, 1000, 1200);
+          light.target.position.set( 0, 0, 0 );
+
+          light.intensity = 1;
+          scene.add(light);
       }
 
   /*
@@ -519,20 +564,23 @@
 
       // Renders the scene and updates the render as needed.
       function animate() {
-
-        // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
         requestAnimationFrame(animate);
         
         // Render the scene.
         renderer.render(scene, camera);
         cameraControls.update();
+        stats.update();
         movement();
-
       }
 
     </script>
-      <div class="standardtext" id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center; margin-top:10px;"></div>
-    <div class="standardtext" id="score" style="width:100%; height:100%; position:absolute; top:0; left=0; margin-top:10px; margin-left:10px"></div>
-    <div class="standardtext" id="otherScore" style="width:100%; height:100%; position:absolute; top:0; right=0; margin-top:35px; margin-left:10px;"></div>
+    
+    <div class="standardtext" id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center; margin-top:10px;">
+    </div>
+    <div class="standardtext" id="score" style="width:100%; height:100%; position:absolute; top:0; left=0; margin-top:10px; margin-left:10px">
+    </div>
+    <div class="standardtext" id="otherScore" style="width:100%; height:100%; position:absolute; top:0; right=0; margin-top:35px; margin-left:10px;">
+    </div>
+    
   </body>
 </html>
