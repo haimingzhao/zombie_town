@@ -113,7 +113,7 @@
 
       // Set up the scene, camera, and renderer as global variables.
       var scene, camera, renderer;
-      var cameraControls;
+      var cameraControls, axis;
       var stats, container, loaded;
       var clock = new THREE.Clock();
       var toLoad = 2;
@@ -127,6 +127,9 @@
         lastKeyframe    = 0,    // previous keyframe
         currentKeyframe = 0;
       var time;
+      var qPI = Math.PI/4;
+      var q3PI = (Math.PI)*3/4;
+      var hPI = Math.PI/2;
 
       init();
       animate();
@@ -191,7 +194,7 @@
         var loader = new THREE.JSONLoader();
         // var loader = new THREE.BufferGeometryLoader();
         loader.callbackProgress = callbackProgress;
-        loader.load( "assets/models/map1/map1.js", function(geometry, materials){
+        loader.load( "assets/models/map1/map1-line-save.js", function(geometry, materials){
           // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
           // for (var i = 0; i < materials.length; i++){
           //       materials[i].index0AttributeName = "position";
@@ -323,23 +326,22 @@
         function addCharacters () {
 
           var loader = new THREE.JSONLoader();
-            loader.load( "assets/models/zombie/zombiefinal.js", function(geometry, materials){
+            loader.load( "assets/models/zombie/zombiefinal-small.js", function(geometry, materials){
 
               // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
-              geometry.computeMorphNormals();
-              zombie = new THREE.MorphAnimMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
+              // geometry.computeMorphNormals();
+              // THREE.AnimationHandler.add( geometry.animation );
+              
+              zombie = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
+              // zombie = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
               zombie.position.set( 0, 0, 0 );
               zombie.scale.set(1,1,1);
               // zombie.castShadow = true;
               scene.add(zombie);
               camera.lookAt(zombie.position);
-              zombie.add(camera);
+              camera.add(zombie);
+
               loadingFinish();
-
-              mesh.parseAnimations();
-
-              mesh.playAnimation( geometry.firstAnimation, scope.animationFPS );
-              mesh.baseDuration = mesh.duration;
             });
 
           var geometry = new THREE.BoxGeometry(5, 5, 5);
@@ -387,21 +389,76 @@
           }
         });
 
-        function movement() {
-          walking = false;
-          // timerTicks++; 
+        function moveDirection(character, keyPressed, dis){
+          var rot = camera.rotation.z;
+          switch(keyPressed) {
+              case 'A' : 
+                if (rot > -qPI && rot <= qPI){
+                  character.position.x -= dis;
+                  character.rotation.y = -hPI;
+                }else if (rot > qPI && rot <= q3PI){
+                  character.position.z += dis;
+                  character.rotation.y = hPI;
+                }else if (rot > -q3PI && rot <= -qPI){
+                  character.position.z -= dis;
+                  character.rotation.y = hPI;
+                }else{
+                  character.position.x += dis;
+                  character.rotation.y = hPI;
+                }
+                break;
+              case 'D' : 
+                if (rot > -qPI && rot <= qPI){
+                  character.position.x += dis;  
+                }else if (rot > qPI && rot <= q3PI){
+                  character.position.z -= dis;
+                }else if (rot > -q3PI && rot <= -qPI){
+                  character.position.z += dis;
+                }else{
+                  character.position.x -= dis;
+                }
+                break;
+              case 'W' :
+                if (rot > -qPI && rot <= qPI){
+                  character.position.z -= dis;  
+                }else if (rot > qPI && rot <= q3PI){
+                  character.position.x -= dis;
+                }else if (rot > -q3PI && rot <= -qPI){
+                  character.position.x += dis;
+                }else{
+                  character.position.z += dis;
+                }
+                break;
+              case 'S' :
+                if (rot > -qPI && rot <= qPI){
+                  character.position.z += dis;  
+                }else if (rot > qPI && rot <= q3PI){
+                  character.position.x += dis;
+                }else if (rot > -q3PI && rot <= -qPI){
+                  character.position.x -= dis;
+                }else{
+                  character.position.z -= dis;
+                }
+                break;
+          }
+        }
 
+        function movement() {
+          // walking = false;
+          // timerTicks++; 
           // if (timerTicks === 10) {
           //   humans.forEach(function(human) {
           //     human.position.x += 1; 
           //   });
           //   timerTicks = 0; 
           // }
+
             if(Key.isDown(Key.A)) {
                 keyPressed = 'A';
-                walking = true;
+                // walking = true;
                 if(!inSolidRange(keyPressed)){
-                  zombie.position.x -= 2;
+                  // zombie.position.x -= 2;
+                  moveDirection(zombie, 'A', 2);
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
@@ -415,10 +472,11 @@
                 }
             }
             if(Key.isDown(Key.W)) {
-              walking = true;
+              // walking = true;
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
-                  zombie.position.z += 2;
+                  // zombie.position.z += 2;
+                  moveDirection(zombie, 'W', 2);
                 } else if(!wallHit) {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
@@ -432,10 +490,11 @@
                 }
             }
             if(Key.isDown(Key.S)) {
-              walking = true;
+              // walking = true;
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                zombie.position.z -= 2;
+                // zombie.position.z -= 2;
+                moveDirection(zombie, 'S', 2);
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
@@ -450,10 +509,11 @@
                 }
               }
               if(Key.isDown(Key.D)) {
-                walking = true;
+                // walking = true;
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
-                    zombie.position.x += 2;
+                    // zombie.position.x += 2;
+                    moveDirection(zombie, 'D', 2);
                 } else {
                   if(!humanHit && opponentHit) {
                     socket.send({'gameOverSingle': [clientid]});
@@ -485,7 +545,10 @@
         }
 
         function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
-          console.log('Number of humans: ' + humans.length);
+          // console.log('Number of humans: ' + humans.length);
+          if (humans === undefined){
+            return false;
+          }
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
@@ -555,6 +618,8 @@
         requestAnimationFrame(animate);
         
         // walkingAnimation();
+        // var delta = clock.getDelta();
+        // THREE.AnimationHandler.update( delta );
 
         // Render the scene.
         renderer.render(scene, camera);
@@ -564,26 +629,12 @@
 
       }
 
-      function walkingAnimation(){
-        if ( zombie && walking ) // exists / is loaded 
-          {
-            // Alternate morph targets
-            time = new Date().getTime() % duration;
-            keyframe = Math.floor( time / interpolation ) + animOffset;
-            if ( keyframe != currentKeyframe ) 
-            {
-              zombie.morphTargetInfluences[ lastKeyframe ] = 0;
-              zombie.morphTargetInfluences[ currentKeyframe ] = 1;
-              zombie.morphTargetInfluences[ keyframe ] = 0;
-              lastKeyframe = currentKeyframe;
-              currentKeyframe = keyframe;
-            }
-            zombie.morphTargetInfluences[ keyframe ] = 
-              ( time % interpolation ) / interpolation;
-            zombie.morphTargetInfluences[ lastKeyframe ] = 
-              1 - zombie.morphTargetInfluences[ keyframe ];
-          }
-      }
+      // function walkingAnimation(){
+      //   if ( zombie && walking ){
+      //     var delta = clock.getDelta();
+      //     zombie.updateAnimation(1000*delta);
+      //   }
+      // }
 
     </script>
     <span id="timer"></span>
