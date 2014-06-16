@@ -99,10 +99,11 @@ var io = socket.listen(server);
             client.username = message.clientNav;
             console.log(client.username);
         }
-        if('spawnHuman' in message) {
+        if('humanSpawn' in message) {
             var hpos = spawnHuman();
             client.emit(hpos);
-            players[otherplayerid].send(hpos);
+            players[otherplayerid].send({'hpos': hpos});
+            client.send({'hpos': hpos});
         }
     });
 

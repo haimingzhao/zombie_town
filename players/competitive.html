@@ -459,6 +459,7 @@
                 score++;
                 socket.send({'scoreComp': score});
                 document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
+                socket.send({'humanSpawn' : 0});
                 addHuman();
               }
             }else {
@@ -477,7 +478,7 @@
                   score++;
                   socket.send({'scoreComp': score});
                   document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
-
+                  socket.send({'humanSpawn' : 0});
                   addHuman();
                 }
                 
@@ -524,7 +525,7 @@
           document.getElementById("timer").innerHTML=count + " secs";
         }
 
-            function gameOverPage() {
+      function gameOverPage() {
       $('#main').fadeTo('slow', 0); 
       window.location = 
         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + username + "&" + score + "&" + otherUsername + "&" + otherScore;
@@ -536,6 +537,22 @@
         socket.send({'switch': [clienttype]});
       } 
     }
+
+        function addHuman() {
+          socket.on('message' , function(obj) {
+            if('hpos' in obj) {
+          humans.push('h' + humans.length+1);
+          console.log(humans.length);
+          var geometry = new THREE.CubeGeometry(5, 5, 5);
+          var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+          humans[humans.length-1] = new THREE.Mesh(geometry, material);
+          humans[humans.length-1].position.x = obj.hpos[0];
+          humans[humans.length-1].position.z = obj.hpos[1];
+          humans[humans.length-1].position.y = 2.5;
+          scene.add(humans[humans.length-1]);
+            }
+          });
+        }
 
       // Renders the scene and updates the render as needed.
       function animate() {
