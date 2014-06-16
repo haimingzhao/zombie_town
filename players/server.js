@@ -179,15 +179,6 @@ var io = socket.listen(server);
             client.score = message;
         }
     });
-
-    client.on('single', function() {
-            console.log('loadHumans');
-            var i;
-            for(i = 0; i < humans.length; i++) {
-                var humanPos = spawnHuman();
-                client.send({'humanPos': humanPos, 'humanIndex': i, 'humanName': humans[i]});
-            }  
-    });
 //**************************************************************************************************************
 
     client.on('disconnect', function() {
