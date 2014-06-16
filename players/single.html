@@ -53,10 +53,8 @@
           room,
           keyPressed,
           humans = [],
-          humanHit = false, 
           timerTicks = 0,
-          opponentHit = false,
-          wallHit = false, 
+          opponentHit = false, 
           count = 120,
           score = 0,
           move = false; 
@@ -195,19 +193,7 @@
           slayer.position.y = 2.5;
           scene.add(slayer);
 
-          socket.on('message', function(obj) {
-            if('humanPos' in obj) {
-              console.log(JSON.stringify(obj));
-              humans.push(obj.humanName);
-              var geometry = new THREE.CubeGeometry(5, 5, 5);
-              var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-              humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
-              humans[obj.humanIndex].position.x = obj.humanPos[0];
-              humans[obj.humanIndex].position.z = obj.humanPos[1];
-              humans[obj.humanIndex].position.y = 2.5;
-              scene.add(humans[obj.humanIndex]);
-            }
-          });
+          addHumans();
 
           addCamera();
 
@@ -347,11 +333,11 @@
               console.log("Violating in X domain.\n");
 
               if(!humans[i].turned) {
-                humanHit = true;
+                score++;
+                document.getElementById("score").innerHTML="Player 1: \n" + score;
                 humans[i].material.color.setHex(0x4B088A);
                 humans[i].turned = true;
               }
-            // return true; 
 
             } else if (((dir === 'W') || (dir === 'S')) && 
               (newPlayerZ < humans[i].position.z + 7.5) && (newPlayerZ > humans[i].position.z - 7.5) && 
@@ -359,18 +345,17 @@
               console.log("Violating in Y domain.\n");
 
                 if(!humans[i].turned) {
-                  humanHit = true;
+                  score++;
+                  document.getElementById("score").innerHTML="Player 1: \n" + score;
                   humans[i].material.color.setHex(0x4B088A);
                   humans[i].turned = true;
                 }
-                // return true; 
              }
           }
 
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < opponentPos.x + 7.5) && (newPlayerX > opponentPos.x - 7.5) && 
             (newPlayerZ < opponentPos.z + 7.5) && (newPlayerZ > opponentPos.z - 7.5)) {
-            console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
@@ -378,7 +363,6 @@
           } else if (((dir === 'W') || (dir === 'S')) && 
             (newPlayerZ < opponentPos.z + 5) && (newPlayerZ > opponentPos.z - 5) && 
             (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5)) {
-            console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
@@ -386,7 +370,6 @@
                 wallHit = true;
                 return true;
           } else {
-            console.log("Not violating.\n"); 
             return false; 
           }
         }
@@ -399,18 +382,20 @@
           count -= 1;
           if(count <= 0) {
             clearInterval(count);
+            $('#main').fadeTo('slow', 0); 
+            //     window.location = 
+            //         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/test.php?' + 
+            //         window.location.href.split('?')[1] + '&' + score;
             return;
           } 
           document.getElementById("timer").innerHTML=count + " secs";
         }
 
         function updateScore() {
-          score++;
-          document.getElementById("score").innerHTML="Player 1: \n" + score;
-          humanHit = false;
           console.log(score);
           if(score === humans.length) {
-            console.log("win!!!");
+            socket.emit('Single');
+            addHumans();
           }
         }
 
@@ -424,11 +409,23 @@
           console.log('key pressed ' + keyPressed);
           if(!humanHit && opponentHit && score < humans.length) {
               gameOver();
-          } else if(!wallHit && humanHit) {
-            updateScore();
-          } /*else if(score === humans.length) {
-            console.log('WIN!!!!!!');
-          }*/
+            }
+        }
+
+        function addHumans() {
+          socket.on('message', function(obj) {
+            if('humanPos' in obj) {
+              console.log(JSON.stringify(obj));
+              humans.push(obj.humanName);
+              var geometry = new THREE.CubeGeometry(5, 5, 5);
+              var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+              humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
+              humans[obj.humanIndex].position.x = obj.humanPos[0];
+              humans[obj.humanIndex].position.z = obj.humanPos[1];
+              humans[obj.humanIndex].position.y = 2.5;
+              scene.add(humans[obj.humanIndex]);
+            }
+          });
         }
 
       // Renders the scene and updates the render as needed.
@@ -445,7 +442,7 @@
       }
 
     </script>
-      <div id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center;"></div>
-    <div id="score" style="width:100%; height:100%; position:absolute; top:0; left=0;"></div>
+      <div id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center; margin-top:10px"></div>
+    <div id="score" style="width:100%; height:100%; position:absolute; top:0; left=0; margin-top:10px; margin-left:10px"></div>
 	</body>
 </html>
