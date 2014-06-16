@@ -46,13 +46,26 @@
       var cameraControls;
       var clock = new THREE.Clock();
 
+          var zombie,
+          slayer,
+          clientid,
+          clienttype, 
+          room,
+          keyPressed,
+          humans = [],
+          humanHit = false, 
+          timerTicks = 0,
+          opponentHit = false,
+          wallHit = false, 
+          count = 120,
+          score = 0,
+          move = false; 
+
       init();
       animate();
 
       // Sets up the scene.
       function init() {
-
-        // setUpScene(scene, camera);
 
         // Create the scene and set the scene size.
         scene = new THREE.Scene();
@@ -166,20 +179,6 @@
   *********************************************************************************************************************
   *********************************************************************************************************************
   */
-        var zombie,
-          slayer,
-          clientid,
-          clienttype, 
-          room,
-          keyPressed,
-          humans = [],
-          humanHit = false, 
-          timerTicks = 0,
-          opponentHit = false,
-          wallHit = false, 
-          count = 120,
-          score = 0,
-          move = false; 
 
         function addCharacters () {
           var geometry = new THREE.CubeGeometry(5, 5, 5);
@@ -197,33 +196,15 @@
           scene.add(slayer);
 
           socket.on('message', function(obj) {
-            // if('humans' in obj) {
-            //   var i;
-            //   console.log(humans.length);
-            //   for(i = 0; i < (obj.humans).length; i++) {
-            //     humans.push(obj.humans[i]);
-            //     var geometry = new THREE.CubeGeometry(5, 5, 5);
-            //     var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-            //     humans[i] = new THREE.Mesh(geometry, material);
-            //     humans[i].position.y = 2.5;
-            //     humans[i].position.x = obj.humans[i].x;
-            //     humans[i].position.z = obj.humans[i].z;
-            //     humans[i].turned = false;
-            //     scene.add(humans[i]);
-            //     console.log('human is at ' + humans[i].position.x + ', ' + humans[i].position.z);
-            //   }
-            // }
             if('humanPos' in obj) {
               console.log(JSON.stringify(obj));
               humans.push(obj.humanName);
-              // console.log(JSON.stringifynumb(humans));
-                var geometry = new THREE.CubeGeometry(5, 5, 5);
-                var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-                humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
+              var geometry = new THREE.CubeGeometry(5, 5, 5);
+              var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
+              humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
               humans[obj.humanIndex].position.x = obj.humanPos[0];
               humans[obj.humanIndex].position.z = obj.humanPos[1];
               humans[obj.humanIndex].position.y = 2.5;
-              // console.log('human is at ' + obj.humnPos[0] + ', ' + obj.humanPos[1]);
               scene.add(humans[obj.humanIndex]);
             }
           });
@@ -236,6 +217,7 @@
         socket.on('connect', function() {
           console.log('connect');
           socket.emit('single');
+          document.getElementById("score").innerHTML="Player 1: \n" + score;
         });
 
         socket.on('message', function(obj) {
@@ -264,7 +246,6 @@
           if (timerTicks === 10) {
             humans.forEach(function(human) {
               if(!human.turned && !atMapLimit(human.position.x, human.position.z)) {
-                // human.position.x += 1; 
                 var move = Math.floor((Math.random()*4)+1);
                 switch(move) {
                   case 1:
@@ -285,110 +266,62 @@
             timerTicks = 0; 
           } 
             if(Key.isDown(Key.A)) {
-                        move = true;
-
+                move = true;
                 keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
-                  // inSolidRange(keyPressed);
                   zombie.position.x -= 2;
-                // } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});
-                    scene.remove(zombie);
-                    move = false;
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  objectHit(keyPressed);
                 }
             }
             if(Key.isDown(Key.W)) {
-                        move = true;
-
+              move = true;
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
-                  // inSolidRange(keyPressed);
                   zombie.position.z -= 2;
-                // } else if(!wallHit) {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                    move = false;
-                  } else if(!wallHit && humanHit){
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  objectHit(keyPressed);
                 }
             }
             if(Key.isDown(Key.S)) {
-                        move = true;
-
+              move = true;
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                // inSolidRange(keyPressed);
                 zombie.position.z += 2;
-                // } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                    move = false;
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  objectHit(keyPressed);
                 }
               }
               if(Key.isDown(Key.D)) {
-                          move = true;
-
+                move = true;
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
-                  // inSolidRange(keyPressed);
                     zombie.position.x += 2;
-                // } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                    move = false;
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  objectHit(keyPressed);
                 }
               }
 
-              //Slayer AI
-              if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
-              if(slayer.position.x > zombie.position.x) {
-                slayer.position.x -= 1;
-              } else {
-                slayer.position.x += 1;
-              }
-              if(slayer.position.z > zombie.position.z) {
-                slayer.position.z -= 1;
-              } else {
-                slayer.position.z += 1;
-              } 
-              //Game Over
-              if(slayer.position.x <= zombie.position.x && slayer.position.z <= zombie.position.z) {
-                console.log('game over');
-                socket.send({'gameOverSingle': clientid});
-                scene.remove(zombie);
-                move = false;
-                $('#main').fadeTo('slow', 0); 
-                window.location = 
-                    'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/test.php?' + 
-                    window.location.href.split('?')[1] + '&' + score;
-              }
-            }
+            //   //Slayer AI
+            //   if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
+            //   if(slayer.position.x > zombie.position.x) {
+            //     slayer.position.x -= 1;
+            //   } else {
+            //     slayer.position.x += 1;
+            //   }
+            //   if(slayer.position.z > zombie.position.z) {
+            //     slayer.position.z -= 1;
+            //   } else {
+            //     slayer.position.z += 1;
+            //   } 
+            //   //Game Over
+            //   if(slayer.position.x === zombie.position.x && slayer.position.z === zombie.position.z) {
+            //     console.log('game over');
+            //     socket.send({'gameOverSingle': clientid});
+            //     scene.remove(zombie);
+            //     move = false;
+            //     $('#main').fadeTo('slow', 0); 
+            //     window.location = 
+            //         'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/test.php?' + 
+            //         window.location.href.split('?')[1] + '&' + score;
+            //   }
+            // }
         }
 
         function inSolidRange(keyPressed) {
@@ -468,8 +401,34 @@
             clearInterval(count);
             return;
           } 
-          //do something here to show timer updating??? ----------------------------------------
           document.getElementById("timer").innerHTML=count + " secs";
+        }
+
+        function updateScore() {
+          score++;
+          document.getElementById("score").innerHTML="Player 1: \n" + score;
+          humanHit = false;
+          console.log(score);
+          if(score === humans.length) {
+            console.log("win!!!");
+          }
+        }
+
+        function gameOver() {
+            socket.send({'scoreSingle': score});                    
+            scene.remove(zombie);
+            move = false;
+        }
+
+        function objectHit(keyPressed) {
+          console.log('key pressed ' + keyPressed);
+          if(!humanHit && opponentHit && score < humans.length) {
+              gameOver();
+          } else if(!wallHit && humanHit) {
+            updateScore();
+          } /*else if(score === humans.length) {
+            console.log('WIN!!!!!!');
+          }*/
         }
 
       // Renders the scene and updates the render as needed.
@@ -486,7 +445,7 @@
       }
 
     </script>
-    <span id="timer"></span>
-    <span id="score"></span>
+      <div id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center;"></div>
+    <div id="score" style="width:100%; height:100%; position:absolute; top:0; left=0;"></div>
 	</body>
 </html>

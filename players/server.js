@@ -174,10 +174,6 @@ var io = socket.listen(server);
     //Don't need to send anything besides logging in high score. Don't need to add to array of players
     //Need to get back score at the end.
     client.on('message', function(message) {
-        if('gameOverSingle' in message) {
-            console.log('gameOverSingle');
-            client.send({'removeSingle': client.id});
-        }
         if('scoreSingle' in message) {
             console.log(message);
             client.score = message;
@@ -216,8 +212,8 @@ var io = socket.listen(server);
     }
 
     function spawnHuman() {
-        var initX = Math.floor((Math.random()*290)+1);
-        var initZ = Math.floor((Math.random()*290)+1);
+        var initX = Math.floor((Math.random()*270)+1);
+        var initZ = Math.floor((Math.random()*270)+1);
 
         var quadrant = Math.floor((Math.random()*4)+1);
         switch(quadrant) {

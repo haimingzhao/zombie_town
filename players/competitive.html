@@ -222,23 +222,19 @@
         socket.on('message', function(obj) {
           console.log(obj);
           if('room' in obj) {
-            console.log('we are in room ' + obj.room);
             room = obj.room;
           }
           if('newPosition' in obj) {
-
             if ('zombie' in obj.newPosition) {
               console.log('zombie');
               zombie.position.x = obj.newPosition.zombie[0].x;
               zombie.position.z = obj.newPosition.zombie[0].z;
               switchingInProgress = false; 
-              console.log('switchingInProgress unset'); 
             } else if ('slayer' in obj.newPosition){
               console.log('slayer');
               slayer.position.x = obj.newPosition.slayer[0].x;
               slayer.position.z = obj.newPosition.slayer[0].z;
               switchingInProgress = false; 
-              console.log('switchingInProgress unset'); 
             }
           }
           if('type' in obj) {
@@ -246,7 +242,6 @@
             clienttype = obj.type;
             addCamera(obj.type); 
             if('respawn' in obj) {
-              console.log('switching');
                 zombie.position.x = obj.respawn[0];
                 zombie.position.z = obj.respawn[1];
                 socket.send({'zombie': [zombie.position]});
@@ -292,7 +287,6 @@
         function movement() {
 
           if (switchingInProgress) {
-            console.log('switchingInProgress'); 
             return; 
           }
 
@@ -332,7 +326,6 @@
                   } else {
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
                       socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
@@ -349,7 +342,6 @@
                   } else if(!wallHit) {
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
                       socket.send({'switch': [clienttype]});
                     } else if(!wallHit){
                       score += 1;
@@ -366,7 +358,6 @@
                   } else {
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
                       socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
@@ -383,7 +374,6 @@
                   } else {
                     if(!humanHit && opponentHit) {
                       switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
                       socket.send({'switch': [clienttype]});
                     } else if(!wallHit) {
                       score += 1;
@@ -404,7 +394,6 @@
                   } else {
                     if(opponentHit) {
                       switchingInProgress = true; 
-                      console.log('switchingInProgress set'); 
                       socket.send({'switch': [clienttype]});
                 }
                   }
@@ -417,7 +406,6 @@
               } else {
                 if(opponentHit) {
                   switchingInProgress = true; 
-                  console.log('switchingInProgress set'); 
                   socket.send({'switch': [clienttype]});
                 }
               }
@@ -430,7 +418,6 @@
               } else {
                 if(opponentHit) {
                   switchingInProgress = true;  
-                  console.log('switchingInProgress set'); 
                   socket.send({'switch': [clienttype]});
                 }
               }
@@ -443,7 +430,6 @@
               } else {
                 if(opponentHit) {
                   switchingInProgress = true; 
-                  console.log('switchingInProgress set');  
                   socket.send({'switch': [clienttype]});
                 }
               }
@@ -494,7 +480,6 @@
                 socket.send({'humanHit': i});;
               }
             }
-            // return true; 
 
             } else if (((dir === 'W') || (dir === 'S')) && 
               (newPlayerZ < humans[i].position.z + 5) && (newPlayerZ > humans[i].position.z - 5) && 
@@ -511,14 +496,12 @@
                 }
                 
               }
-              // return true; 
              }
           }
 
           if (((dir === 'A') || (dir === 'D')) && 
             (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5) && 
             (newPlayerZ < opponentPos.z + 5) && (newPlayerZ > opponentPos.z - 5)) {
-            console.log("Violating in X domain.\n");
 
             opponentHit = true;
             return true;
@@ -526,7 +509,6 @@
           } else if (((dir === 'W') || (dir === 'S')) && 
             (newPlayerZ < opponentPos.z + 5) && (newPlayerZ > opponentPos.z - 5) && 
             (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5)) {
-            console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
@@ -534,7 +516,6 @@
                 wallHit = true;
                 return true;
           } else {
-            console.log("Not violating.\n"); 
             return false; 
           }
         }
