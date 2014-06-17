@@ -65,8 +65,10 @@ var io = socket.listen(server);
             if(players.length%2 === 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
+            } else {
+            //DO YOU WANT TO CONTINUE WAITING??????????
             }
-        }
+        } 
 
         if('zombie' in message) {
             client.send({'otherUsername': players[otherplayerid].username});
@@ -117,6 +119,8 @@ var io = socket.listen(server);
             if(players.length%2 === 0) {
                 client.send({'ready': client.type});
                 players[otherplayerid].send({'ready': client.type});
+            } else {
+            //DO YOU WANT TO CONTINUE WAITING??????????
             }
         }
 
@@ -132,10 +136,11 @@ var io = socket.listen(server);
 
         //Send movements to other player
         if('zombieOne' in message) {
-            console.log('zombie in room ' + client.room + JSON.stringify(message));
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         } 
         if('zombieTwo' in message) {
+            client.send({'otherUsername': players[otherplayerid].username});
             players[otherplayerid].send({'newPosition': message});
         }
         
