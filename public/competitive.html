@@ -190,22 +190,23 @@
 
       function callBackZombie(geometry, materials){
         var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );           
-              zombie = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-              zombie.position.set( 0, 0, 0 );
-              zombie.scale.set(1,1,1);
-              scene.add(zombie);
+          zombie = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial( materials ) );
+          zombie.position.set( 0, 0, 0 );
+          zombie.scale.set(1,1,1);
+          scene.add(zombie);
       };
 
       function callBackSlayer(geometry, materials){
         var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );             
-              slayer = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(materials));
+              slayer = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
               slayer.position.set( 20, 0, 20 );
               slayer.scale.set(1,1,1);
               scene.add(slayer);
       }
 
       function setHuman(geometry, materials, posX, posZ){
-        var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(materials));
+        var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry ); 
+        var mesh = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
                 // humans[i] = mesh;
                 mesh.position.set( posX, 0, posZ );
                 humans.push(mesh);
