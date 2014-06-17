@@ -441,7 +441,7 @@
 
               if(!humans[i].turned) {
                 score++;
-                document.getElementById("score").innerHTML="Player 1: \n" + score;
+                document.getElementById("score").innerHTML= username + ": \n" + score;
                 // humans[i].material.color.setHex(0x4B088A);
                 var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
                 humans[i].material = zombieMaterial ;
@@ -457,7 +457,7 @@
 
                 if(!humans[i].turned) {
                   score++;
-                  document.getElementById("score").innerHTML="Player 1: \n" + score;
+                  document.getElementById("score").innerHTML= username + ": \n"  + score;
                   var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
                   humans[i].material = zombieMaterial ;
                   humans[i].turned = true;
