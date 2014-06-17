@@ -85,7 +85,6 @@
         renderer.gammaInput = true;
         renderer.gammaOutput = true;
         renderer.shadowMapEnabled = true;
-        renderer.shadowMapType = THREE.PCFShadowMap;
 
         // Load in the mesh and add it to the scene.
         var loader = new THREE.JSONLoader();
@@ -93,8 +92,6 @@
           mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
           mesh.position.set( 0, 0, 0 );
           mesh.scale.set(1,1,1);
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
           scene.add(mesh);
         });
 
@@ -223,21 +220,10 @@
         socket.on('message', function(obj) {
 
           if('humanPos' in obj) {
-            // humans.push(obj.humanName);
-            // var mesh;
             var loader1 = new THREE.JSONLoader();
-              loader1.load( "assets/models/human/human.js", function(geometry, materials){
-                // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );             
+              loader1.load( "assets/models/human/human.js", function(geometry, materials){            
                 setHuman(geometry, materials, obj.humanPos[0], obj.humanPos[1]); 
             });
-
-            // var geometry = new THREE.BoxGeometry(5, 5, 5);
-            // var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-            // humans[obj.humanIndex] = new THREE.Mesh(geometry, material);
-            // humans[obj.humanIndex].position.x = obj.humanPos[0];
-            // humans[obj.humanIndex].position.z = obj.humanPos[1];
-            // humans[obj.humanIndex].position.y = 2.5;
-            // scene.add(humans[obj.humanIndex]);
           }
           humansLoaded = true;
         });
@@ -282,16 +268,13 @@
 
         }
         if('otherScore' in obj) {
-          // console.log('other player score is ' + JSON.stringify(obj.otherScore));
           otherScore = obj.otherScore;
           document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + otherScore;
         }
         if('humanTurned' in obj) {
-          // humans[obj.humanTurned].material.color.setHex(0x4B088A);
           var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
-                // zombieMaterial.color = 0x009900;
                 humans[obj.humanTurned].material = zombieMaterial ;
-          humans[obj.humanTurned].turned = true;
+                humans[obj.humanTurned].turned = true;
         }
         if('ready' in obj) {
           ready = true;
@@ -302,8 +285,6 @@
           document.getElementById("otherScore").innerHTML= otherUsername.split("&")[1] + ": \n" + otherScore;
         }
         if('playerDisconnect' in obj) {
-          // console.log(obj.playerDisconnect + 'disconnected');
-          // ready = false;
           if(obj.playerDisconnect%2 === 0) {
             scene.remove(zombie);
           } else {
@@ -396,7 +377,6 @@
               keyPressed = 'A';
                 if(!inSolidRange(keyPressed)){
                   slayer.position.x -= 2;
-                  console.log(slayer.position);
                 } else {
                   if(opponentHit) {
                     switchingInProgress = true; 
@@ -480,9 +460,7 @@
 
             if (clienttype === 'z') {
               if(!humans[i].turned) {
-                // humans[i].material.color.setHex(0x4B088A);
                 var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
-                // zombieMaterial.color = 0x009900;
                 humans[i].material = zombieMaterial ;
                 
                 humans[i].turned = true;
@@ -504,9 +482,7 @@
               
             if (clienttype === 'z') {
               if(!humans[i].turned) {
-                // humans[i].material.color.setHex(0x4B088A);
                 var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
-                // zombieMaterial.color = 0x009900;
                 humans[i].material = zombieMaterial ;
 
                 humans[i].turned = true;
@@ -564,9 +540,9 @@
       }
 
       function gameOverPage() {
-        console.log('game over!!!!!!!!!!');
         window.location = 
-          'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + username + "&" + score + "&" + otherUsername + "&" + otherScore;
+          'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' 
+          + username + "&" + score + "&" + otherUsername + "&" + otherScore;
       }
 
       function zombieObjectHit() {
@@ -576,34 +552,13 @@
         } 
       }
 
-
-
       function addHuman() {
         socket.on('message' , function(obj) {
           if('hpos' in obj) {
-              // humans.push('h' + humans.length+1);
-              // console.log(humans.length);
-              
-              // var geometry = new THREE.BoxGeometry(5, 5, 5);
-              // var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-              // humans[humans.length-1] = new THREE.Mesh(geometry, material);
-              // humans[humans.length-1].position.x = obj.hpos[0];
-              // humans[humans.length-1].position.z = obj.hpos[1];
-              // humans[humans.length-1].position.y = 2.5;
-              // scene.add(humans[humans.length-1]);
-              // humans.push('h' + humans.length+1);
-              // var mesh;
               var loader1 = new THREE.JSONLoader();
-                loader1.load( "assets/models/human/human.js", function(geometry, materials){
-                  // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );             
-                  // var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(materials));
-                  // humans[humans.length-1] = mesh;
-                  setHuman(geometry, materials, obj.hpos[0], obj.hpos[1] ); 
-                  
-                });
-                // humans[humans.length-1].position.set( obj.hpos[0], 0, obj.hpos[1] );
-                // scene.add(humans[humans.length-1]);
-                
+                  loader1.load( "assets/models/human/human.js", function(geometry, materials){
+                    setHuman(geometry, materials, obj.hpos[0], obj.hpos[1] ); 
+                  });   
           }
         });
       }

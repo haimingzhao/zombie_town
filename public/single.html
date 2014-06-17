@@ -2,72 +2,19 @@
 <html>
 	<head>
 		<title>ZombieTown</title>
-		<style>
-      canvas { 
-        width: 100%; height: 100% 
-      }
-
-      #progress {
-          color:#9900FF;
-          top:7em;
-          width: 100%;
-          font-size:3em;
-          font-family: Arial;
-          font-weight:bold;
-          position:absolute;
-          z-index:100;
-          text-align: center;
-          text-shadow: #000 0px 0px 10px;
-          display:none;
-      }
-
-      #start {
-          color:#009900;
-          text-shadow: #000 0px 0px 2px;
-          padding:0.1em 0.3em;
-          width:3em;
-          font-family: Arial;
-          text-align: center;
-          display:none;
-      }
-
-      .shadow {
-          /*-moz-box-shadow: 0px 0px 5px #000;*/
-          /*-webkit-box-shadow: 0px 0px 5px #000;*/
-          box-shadow: 0px 0px 5px #000;
-      }
-
-      #progressbar {
-        text-align: center;
-        background: white;
-        width: 250px;
-        height: 10px;
-      }
-
-      #bar {
-        background:#d00;
-        width:50px;
-        height:10px;
-      }
-
-      .enabled {
-        color: lime!important;
-        cursor:pointer;
-      }
-
-      .enabled:hover {
-        text-shadow: #0f0 0px 0px 5px !important;
-      }
-
-      .disabled {
-        background:gray;
-        cursor:default;
-      }
-    </style>
-		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-		<script src="lib/three.js"></script>
-		<script src="js/keyboard.js"></script>
+    <script src="lib/three.js"></script>
+    <script src="js/keyboard.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="assets/css/gamestyle.css">
+    
+    <audio id="loop" preload autoplay>
+      <source src="assets/music/ZombieTrack.mp3">
+      <source src="assets/music/ZombieTrack.wav">
+      <source src="assets/music/ZombieTrack.ogg">
+    </audio>
+    <script src="js/audio.js"></script>
 	</head>
 	
   <body>
@@ -99,6 +46,22 @@
       var qPI = Math.PI/4;
       var q3PI = (Math.PI)*3/4;
       var hPI = Math.PI/2;
+
+      var zombie,
+          slayer,
+          clientid,
+          clienttype, 
+          room,
+          keyPressed,
+          humans = [],
+          timerTicks = 0,
+          opponentHit = false, 
+          count = 60,
+          score = 0,
+          move = false,
+          loadingHumans = false;
+      var username = window.location.href.split("?")[1];
+
 
       init();
       animate();
@@ -156,19 +119,12 @@
 
         // Load in the mesh and add it to the scene.
         var loader = new THREE.JSONLoader();
-        // var loader = new THREE.BufferGeometryLoader();
         loader.callbackProgress = callbackProgress;
-        loader.load( "assets/models/map1/map1-line-save.js", function(geometry, materials){
-          // var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );
-          // for (var i = 0; i < materials.length; i++){
-          //       materials[i].index0AttributeName = "position";
-          //     }
+        loader.load( "assets/models/map1/map1.js", function(geometry, materials){
           var material = new THREE.MeshFaceMaterial( materials );
           mesh = new THREE.Mesh( geometry, material );
           mesh.position.set( 0, 0, 0 );
           mesh.scale.set(1,1,1);
-          // mesh.castShadow = true;
-          // mesh.receiveShadow = true;
           scene.add(mesh);
           loadingFinish();
         });
@@ -207,8 +163,9 @@
         container = document.createElement( 'div' );
         document.body.appendChild( container );
         stats = new Stats();
-        stats.domElement.style.float = 'right';
-        stats.domElement.style.top = '0px';
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '10px';
+        stats.domElement.style.right = '0px';
         stats.domElement.style.zIndex = 100;
         container.appendChild( stats.domElement );
       }
@@ -238,109 +195,72 @@
         var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI / 2, 1 );
           light.position.set( 300, 1000, 1200);
           light.target.position.set( 0, 0, 0 );
-
-          // light.castShadow = true;
           light.intensity = 1;
-
-          // light.shadowCameraFov = 10;
-          // light.shadowCameraVisible = true;
-          // light.shadowDarkness = 0.5;
-          // light.shadowMapWidth = 1024;
-          // light.shadowMapHeight = 768;
-          scene.add(light);
-        
-        // SKYDOME
-        // var vertexShader = document.getElementById( 'vertexShader' ).textContent;
-        // var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
-        // var uniforms = {
-        //   topColor:    { type: "c", value: new THREE.Color( 0x000000) },
-        //   bottomColor: { type: "c", value: new THREE.Color( 0x9999ff) },
-        //   offset:    { type: "f", value: 400 },
-        //   exponent:  { type: "f", value: 0.6 }
-        // }
-        // uniforms.topColor.value.copy( hemiLight.color );
-
-        // scene.fog.color.copy( uniforms.bottomColor.value );
-
-        // var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
-        // var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
-
-        // var sky = new THREE.Mesh( skyGeo, skyMat );
-        // scene.add( sky );  
+          scene.add(light);    
       }
 
   /*
-  *********************************************************************************************************************
-  *********************************************************************************************************************
+  *****************************************************************************
   */
-        var zombie,
-          slayer,
-          clientid,
-          clienttype, 
-          room,
-          keyPressed,
-          humans = [],
-          humanHit = false, 
-          timerTicks = 0,
-          opponentHit = false,
-          wallHit = false, 
-          count = 120,
-          score = 0; 
 
-        function addCharacters () {
 
-          var loader = new THREE.JSONLoader();
-            loader.load( "assets/models/zombie/zombiefinal-small.js", function(geometry, materials){
+      function callBackZombie(geometry, materials){
+        var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );           
+          zombie = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial( materials ) );
+          zombie.position.set( 0, 0, 0 );
+          zombie.scale.set(1,1,1);
+          scene.add(zombie);
+          camera.lookAt(zombie.position);
+          zombie.add(camera);
+          loadingFinish();
+      };
 
-              var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );           
-              zombie = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial( materials ) );
-              // zombie = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-              zombie.position.set( 0, 0, 0 );
-              zombie.scale.set(1,1,1);
-              // zombie.castShadow = true;
-              scene.add(zombie);
-              camera.lookAt(zombie.position);
-              zombie.add(camera);
-
-              loadingFinish();
-            });
-
-            loader.load( "assets/models/human/human.js", function(geometry, materials){
-
-              var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );      
+      function callBackSlayer(geometry, materials){
+        var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );             
               slayer = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
-              slayer.position.set( 20, 0, 20 );
+              slayer.position.set( 200, 0, -200 );
               slayer.scale.set(1,1,1);
               scene.add(slayer);
-
               loadingFinish();
-            }, 'assets/models/human/');
+      }
 
-          socket.on('message', function(obj) {
-            if('humans' in obj) {
-              var i;
-              for(i = 0; i < (obj.humans).length; i++) {
-                humans.push(obj.humans[i]);
-                var geometry = new THREE.BoxGeometry(5, 5, 5);
-                var material = new THREE.MeshBasicMaterial({color: 0xF5D0A9});
-                humans[i] = new THREE.Mesh(geometry, material);
-                humans[i].position.y = 2.5;
-                humans[i].position.x = -40;
-                humans[i].position.z = 20;
-                humans[i].turned = false;
-                scene.add(humans[i]);
-              }
-            }
-          });
+      function setHuman(geometry, materials, posX, posZ){
+        var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry ); 
+        var mesh = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
+                // humans[i] = mesh;
+                mesh.position.set( posX, 0, posZ );
+                humans.push(mesh);
+                scene.add(mesh);    
+      }
 
-        }
+        function addCharacters () {
+          var loader = new THREE.JSONLoader();
+            loader.load( "assets/models/zombie/zombiefinal-small.js", callBackZombie);
 
+          var loader1 = new THREE.JSONLoader();
+            loader1.load( "assets/models/human/human.js", function (geometry, materials){
+                var bufferGeometry = new THREE.BufferGeometryUtils.fromGeometry( geometry );             
+                      slayer = new THREE.Mesh( bufferGeometry, new THREE.MeshFaceMaterial(materials));
+                      slayer.position.x = -200;
+                      slayer.position.z = 200;
+                      scene.add(slayer);
+                      loadingFinish();
+                }
+                , 'assets/models/slayer/');
+
+          addHumans();
+
+        };
 
         socket.on('connect', function() {
           console.log('connect');
         });
 
         socket.on('message', function(obj) {
+
+          if('removeSingle' in obj) {
+            scene.remove(zombie);
+          }
 
           if('playerDisconnect' in obj) {
             console.log(obj.playerDisconnect + 'disconnected');
@@ -419,200 +339,242 @@
         }
 
         function movement() {
-          // walking = false;
-          // timerTicks++; 
-          // if (timerTicks === 10) {
-          //   humans.forEach(function(human) {
-          //     human.position.x += 1; 
-          //   });
-          //   timerTicks = 0; 
-          // }
+          timerTicks++; 
 
+          if (timerTicks === 10) {
+            humans.forEach(function(human) {
+              if(!human.turned && !atMapLimit(human.position.x, human.position.z)) {
+                var move = Math.floor((Math.random()*4)+1);
+                switch(move) {
+                  case 1:
+                    human.position.x += 2;
+                    break;
+                  case 2:
+                    human.position.x -= 2;
+                    break;
+                  case 3:
+                    human.position.z += 2;
+                    break;
+                  case 4:
+                    human.position.z -= 2;
+                    break;
+                }
+              }
+            });
+            timerTicks = 0; 
+          } 
             if(Key.isDown(Key.A)) {
+                move = true;
                 keyPressed = 'A';
-                // walking = true;
                 if(!inSolidRange(keyPressed)){
-                  // zombie.position.x -= 2;
-                  moveDirection(zombie, 'A', 2);
-                } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});
-                    scene.remove(zombie);
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  zombie.position.x -= 2;
+                  objectHit(keyPressed);
                 }
             }
             if(Key.isDown(Key.W)) {
-              // walking = true;
+              move = true;
               keyPressed = 'W';
                 if(!inSolidRange(keyPressed)){
-                  // zombie.position.z += 2;
-                  moveDirection(zombie, 'W', 2);
-                } else if(!wallHit) {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                  } else if(!wallHit && humanHit){
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                  zombie.position.z -= 2;
+                  objectHit(keyPressed);
                 }
             }
             if(Key.isDown(Key.S)) {
-              // walking = true;
+              move = true;
               keyPressed = 'S';
               if(!inSolidRange(keyPressed)){
-                // zombie.position.z -= 2;
-                moveDirection(zombie, 'S', 2);
-                } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                    alive = false;
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                zombie.position.z += 2;
+                  objectHit(keyPressed);
                 }
               }
               if(Key.isDown(Key.D)) {
-                // walking = true;
+                move = true;
                 keyPressed = 'D';
                 if(!inSolidRange(keyPressed)) {
-                    // zombie.position.x += 2;
-                    moveDirection(zombie, 'D', 2);
-                } else {
-                  if(!humanHit && opponentHit) {
-                    socket.send({'gameOverSingle': [clientid]});
-                    socket.send({'scoreSingle': score});                    
-                    scene.remove(zombie);
-                    alive = false;
-                  } else if(!wallHit && humanHit) {
-                    score += 1;
-                    console.log('score is ' + score);
-                    humanHit = false;
-                  }
+                    zombie.position.x += 2;
+                  objectHit(keyPressed);
                 }
               }
+
+              //Slayer AI
+            if(!atMapLimit(slayer.position.x, slayer.position.z) && move) {
+              if(slayer.position.x > zombie.position.x) {
+                slayer.position.x -= 1;
+              } else {
+                slayer.position.x += 1;
+              }
+              if(slayer.position.z > zombie.position.z) {
+                slayer.position.z -= 1;
+              } else {
+                slayer.position.z += 1;
+              } 
+              //Game Over
+              if(slayer.position.x === zombie.position.x && slayer.position.z === zombie.position.z) {
+                console.log('game over');
+                socket.send({'gameOverSingle': clientid});
+                scene.remove(zombie);
+                move = false;
+                gameOverPage();
+              }
+            }
         }
 
         function inSolidRange(keyPressed) {
 
-          var slayerPosX = slayer.position.x,
-            slayerPosY = slayer.position.z,
-            zombiePosX = zombie.position.x,
-            zombiePosY = zombie.position.z;
+          var zombiePosX = zombie.position.x,
+              zombiePosZ = zombie.position.z;
 
             switch(keyPressed) {
-              case 'W' : return inViolation(zombiePosX, zombiePosY + 2, slayer.position, 'W');
-              case 'S' : return inViolation(zombiePosX,  zombiePosY - 2, slayer.position, 'S');
-              case 'A' : return inViolation(zombiePosX - 2,  zombiePosY, slayer.position, 'A');
-              case 'D' : return inViolation(zombiePosX + 2,  zombiePosY, slayer.position, 'D');
+              case 'W' : return inViolation(zombiePosX, zombiePosZ - 2, slayer.position, 'W');
+              case 'S' : return inViolation(zombiePosX,  zombiePosZ + 2, slayer.position, 'S');
+              case 'A' : return inViolation(zombiePosX - 2,  zombiePosZ, slayer.position, 'A');
+              case 'D' : return inViolation(zombiePosX + 2,  zombiePosZ, slayer.position, 'D');
             }
         }
 
-        function inViolation(newPlayerX, newPlayerY, opponentPos, dir) {
-          // console.log('Number of humans: ' + humans.length);
-          if (humans === undefined){
-            return false;
-          }
+        function inViolation(newPlayerX, newPlayerZ, opponentPos, dir) {
           var i;
           for(i = 0; i < humans.length; i++) {
             if (((dir === 'A') || (dir === 'D')) && 
               (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5)) {
-              console.log("Violating in X domain.\n");
+              (newPlayerZ < humans[i].position.z + 5) && (newPlayerZ > humans[i].position.z - 5)) {
 
               if(!humans[i].turned) {
-                humanHit = true;
-                humans[i].material.color.setHex(0x4B088A);
+                score++;
+                document.getElementById("score").innerHTML="Player 1: \n" + score;
+                // humans[i].material.color.setHex(0x4B088A);
+                var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
+                humans[i].material = zombieMaterial ;
                 humans[i].turned = true;
+              
+                addHuman();
             }
-            return true; 
+
 
             } else if (((dir === 'W') || (dir === 'S')) && 
-              (newPlayerY < humans[i].position.z + 5) && (newPlayerY > humans[i].position.z - 5) && 
-              (newPlayerX < humans[i].position.x + 5) && (newPlayerX > humans[i].position.x - 5)) {
-              console.log("Violating in Y domain.\n");
+              (newPlayerZ < humans[i].position.z + 7.5) && (newPlayerZ > humans[i].position.z - 7.5) && 
+              (newPlayerX < humans[i].position.x + 7.5) && (newPlayerX > humans[i].position.x - 7.5)) {
 
                 if(!humans[i].turned) {
-                  humanHit = true;
-                  humans[i].material.color.setHex(0x4B088A);
+                  score++;
+                  document.getElementById("score").innerHTML="Player 1: \n" + score;
+                  var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
+                  humans[i].material = zombieMaterial ;
                   humans[i].turned = true;
-                }
-                return true; 
+                
+                  addHuman();
              }
+           }
           }
 
           if (((dir === 'A') || (dir === 'D')) && 
-            (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5)) {
-            console.log("Violating in X domain.\n");
+            (newPlayerX < opponentPos.x + 7.5) && (newPlayerX > opponentPos.x - 7.5) && 
+            (newPlayerZ < opponentPos.z + 7.5) && (newPlayerZ > opponentPos.z - 7.5)) {
 
             opponentHit = true;
             return true;
 
           } else if (((dir === 'W') || (dir === 'S')) && 
-            (newPlayerY < opponentPos.z + 5) && (newPlayerY > opponentPos.z - 5) && 
+            (newPlayerZ < opponentPos.z + 5) && (newPlayerZ > opponentPos.z - 5) && 
             (newPlayerX < opponentPos.x + 5) && (newPlayerX > opponentPos.x - 5)) {
-            console.log("Violating in Y domain.\n");
 
             opponentHit = true;
             return true; 
-          } else if(newPlayerX === 296 || newPlayerX === -296 || newPlayerY === 296 || newPlayerY === -296) {
+          } else if(atMapLimit(newPlayerX, newPlayerZ)) {
                 wallHit = true;
                 return true;
           } else {
-            console.log("Not violating.\n"); 
             return false; 
           }
         }
 
-        function timer() {
-          count -= 1;
-          if(count <= 0) {
-            clearInterval(count);
-            return;
-          } 
-          //do something here to show timer updating??? ----------------------------------------
-          document.getElementById("timer").innerHTML=count + " secs";
+        function atMapLimit(characterPosX, characterPosZ) {
+          return characterPosX === 296 || characterPosX === -296 || characterPosZ === 296 || characterPosZ === -296;
         }
 
-      // Renders the scene and updates the render as needed.
-      function animate() {
+        function timer() {
+          if(move) {
+          count -= 1;
+            if(count <= 0) {
+              clearInterval(count);
+              gameOverPage();
+              return;
+            } 
+          document.getElementById("timer").innerHTML=count + " secs";
+          }
+        }
 
-        // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
-        requestAnimationFrame(animate);
+        function gameOver() {
+            socket.send({'scoreSingle': score});                    
+            scene.remove(zombie);
+            // move = false;
+        }
+
+        function objectHit(keyPressed) {
+          if(opponentHit && score < humans.length) {
+              gameOverPage();
+            } 
+        }
+
         
-        // walkingAnimation();
-        // var delta = clock.getDelta();
-        // THREE.AnimationHandler.update( delta );
+        function addHumans() {
+            var i;
+            for(i = 0; i < 10; i++) {
+              var pos = spawnHuman();
+              // console.log(spawnHuman());
+              var loader1 = new THREE.JSONLoader();
+              loader1.load( "assets/models/human/human.js", function(geometry, materials){            
+                setHuman(geometry, materials, pos[0], pos[1]); 
+              });
+            } 
+            loadingHumans = true; 
+        }
 
-        // Render the scene.
-        renderer.render(scene, camera);
-        cameraControls.update();
-        stats.update();
-        movement();
+        function spawnHuman() {
+          var initX = Math.floor((Math.random()*270)+1);
+          var initZ = Math.floor((Math.random()*270)+1);
 
-      }
+          var quadrant = Math.floor((Math.random()*4)+1);
+          switch(quadrant) {
+              case 1: 
+                  return [initX, initZ];
+              case 2:
+                  return [-initX, initZ];
+              case 3:
+                  return [initX, -initZ];
+              case 4:
+                  return [-initX, -initZ];
+          }
+        }
 
-      // function walkingAnimation(){
-      //   if ( zombie && walking ){
-      //     var delta = clock.getDelta();
-      //     zombie.updateAnimation(1000*delta);
-      //   }
-      // }
+        function addHuman() {
+          var pos = spawnHuman();
+
+          var loader1 = new THREE.JSONLoader();
+              loader1.load( "assets/models/human/human.js", function(geometry, materials){            
+                setHuman(geometry, materials, pos[0], pos[1]); 
+              });
+        }
+
+        function gameOverPage() {
+          window.location = 
+            'http://www.doc.ic.ac.uk/project/2013/271/g1327117/webapp/gameover.php?' + 
+              window.location.href.split('?')[1] + '&' + score;
+        }
+
+          // Renders the scene and updates the render as needed.
+        function animate() {
+          requestAnimationFrame(animate);
+          // Render the scene.
+          renderer.render(scene, camera);
+          cameraControls.update();
+          stats.update();
+          movement();
+        }
 
     </script>
-    <span id="timer"></span>
-    <span id="score"></span>
+    <div class="standardtext" id="timer" style="width:100%; height:100%; position:absolute; top:0; text-align:center; margin-top:10px;"></div>
+    <div class="standardtext" id="score" style="width:100%; height:100%; position:absolute; top:0; left=0; margin-top:10px; margin-left:10px"></div>
+
 	</body>
 </html>
