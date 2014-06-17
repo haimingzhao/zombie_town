@@ -254,6 +254,7 @@
 
         socket.on('connect', function() {
           console.log('connect');
+	  document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
         });
 
         socket.on('message', function(obj) {
@@ -441,7 +442,7 @@
 
               if(!humans[i].turned) {
                 score++;
-                document.getElementById("score").innerHTML= username + ": \n" + score;
+                document.getElementById("score").innerHTML= username.split("&")[1] + ": \n" + score;
                 // humans[i].material.color.setHex(0x4B088A);
                 var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
                 humans[i].material = zombieMaterial ;
@@ -457,7 +458,7 @@
 
                 if(!humans[i].turned) {
                   score++;
-                  document.getElementById("score").innerHTML= username + ": \n"  + score;
+                  document.getElementById("score").innerHTML= username.split("&")[1] + ": \n"  + score;
                   var zombieMaterial = new THREE.MeshBasicMaterial({color : 0x009900});
                   humans[i].material = zombieMaterial ;
                   humans[i].turned = true;
